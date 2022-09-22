@@ -18,9 +18,11 @@ from __future__ import print_function
 import datetime
 import pickle
 import os.path
+from tracemalloc import start
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from classes import *
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -67,6 +69,68 @@ def get_upcoming_events(api, starting_time, number_of_events):
                                       orderBy='startTime').execute()
     return events_result.get('items', [])
 
+def check_event_input(event: Event, summary, location, attendees, start_date, end_date):
+    valid = True
+    if summary == "" or summary == None:
+        raise ValueError('Event must have a name')
+    if location == "" or location == None:
+        raise ValueError('Event must have location')
+    # Add check for online location
+    # Add check for physical location
+    if len(attendees) == 0:
+        raise ValueError('Event must have at least one attendee')
+    # Add check for attendee email presence (maybe)?
+    if start_date == "" or start_date == None:
+        raise ValueError('Event must have a start date')
+    # Add check for time format
+    if end_date == "" or end_date == None:
+        raise ValueError('Event must have an end date')
+    # Add check for time format
+
+
+
+    if event.summary == "":
+        valid = False
+    if event.location == "":
+        valid = False
+    if len(event.attendees) == 0:
+        valid = False
+    if event.start == "":
+        valid = False
+    return valid
+
+
+def start_new_event():
+    organiser_status = None
+    while organiser_status == None:
+        organiser_confirmation = input("Are you the organiser? Y/N")
+        if organiser_confirmation.upper() == 'Y':
+            organiser_status = True
+        elif organiser_confirmation.upper() == 'N':
+            organiser_status = False
+
+    
+    summary = input("Insert Event Name")
+
+    location = input("Insert location of event")
+
+    list_of_attendees = []
+    number_of_attendees = input("Please enter the number of attendees")
+    for i in range(number_of_attendees):
+        email = input("Input attendee " + str(i) + "'s email" )
+        attendee = Attendee(email)
+        list_of_attendees.append(attendee)
+
+    start_date = input("Insert a start date")
+    start = '{date}T09:00:00-07:00'.format(date=start_date)
+
+    end_date = input("Insert a end date")
+    end = '{date}T17:00:00-07:00'.format(time=end_date)
+
+    check_event_input(summary, location, list_of_attendees, start_date, end_date)
+
+    event = Event(summary, location, list_of_attendees, start, end)
+
 
 def main():
     api = get_calendar_api()
@@ -79,6 +143,7 @@ def main():
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
+    
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
