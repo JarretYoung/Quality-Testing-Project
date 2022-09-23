@@ -1,12 +1,17 @@
 """
 This file is the class outlining the generic Event for the google calendar
 """
+from datetime import datetime
+
+
 
 class Event():
-    def __init__(self, summary, location, attendees, start, end) -> None:
-        self.id = None
+    def __init__(self, id, summary, location, creator, organisor, attendees, start, end) -> None:
+        self.id = id        
         self.summary = summary
         self.location = location
+        self.creator = creator
+        self.organiser = organisor
         self.attendees = []
         for attendee in attendees:
             self.attendees.append(attendee)
@@ -15,6 +20,12 @@ class Event():
 
     def add_id(self, id):
         self.id = id
+    
+    def add_creator(self, creator):
+        self.creator = creator
+
+    def add_organiser(self, organiser):
+        self.organiser = organiser
 
     def get_JSON_format(self):
         json = {
@@ -40,11 +51,5 @@ class Event():
         }
         return json
 
-class Attendee():
-    def __init__(self, email) -> None:
-        self.email = email
 
-class Date():
-    def __init__(self, dateTime, timeZone) -> None:
-        self.dateTime = dateTime
-        self.timeZone = timeZone
+
