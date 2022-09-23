@@ -23,9 +23,12 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from classes import *
+from datetime import *
+import datetime 
+import re
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
 def get_calendar_api():
@@ -69,72 +72,172 @@ def get_upcoming_events(api, starting_time, number_of_events):
                                       orderBy='startTime').execute()
     return events_result.get('items', [])
 
-def check_event_input(event: Event, summary, location, attendees, start_date, end_date):
+def check_email_validity(email, attendee_number):
+    """
+    This code was copied from geeksforgeeks
+
+    @author:    @ankthon
+    @from:      https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+    """
+    # Make a regular expression
+    # for validating an Email
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+    # Define a function for
+    # for validating an Email
+
+	# pass the regular expression
+	# and the string into the fullmatch() method
+    if(re.fullmatch(regex, email)):
+        pass
+    else:
+        raise ValueError("Attendee {number}'s email is invalid".format(number = attendee_number + 1))
+
+def check_event_input(summary, location, attendees, start_date, end_date):
     valid = True
+    # Checking for Event name
     if summary == "" or summary == None:
         raise ValueError('Event must have a name')
+
+    # Checking for Event location
     if location == "" or location == None:
-        raise ValueError('Event must have location')
-    # Add check for online location
-    # Add check for physical location
+        raise ValueError('Event must have location (Online or Physical)')
+    # Check if location is online and if it is valid
+    check_location_is_online = (location[0:4] == "http")
+    # Check if location is physical and if it is valid
+    location_in_list_form = location.split(" ")
+    check_location_is_physical = True
+    try:
+        temp = location_in_list_form[-2]
+    except IndexError:
+        check_location_is_physical = False
+    else:
+        if (len(location_in_list_form[-1]) < 4) or (len(location_in_list_form[-1]) > 5):  #  4 <= len(postal_code) <= 5
+            check_location_is_physical = False
+        if (len(location_in_list_form[-2]) < 2) or (len(location_in_list_form[-2]) > 3):  #  2 <= len(state_abbreviation) <= 3
+            check_location_is_physical = False
+    # Final check to see if location is valid
+    if (check_location_is_online == False) and (check_location_is_physical == False):
+        raise ValueError('Physical Event location must follow Australian or American format; Online Events must have a join link')
+
+    # Check for Event Attendees
     if len(attendees) == 0:
         raise ValueError('Event must have at least one attendee')
-    # Add check for attendee email presence (maybe)?
+    for i in range(len(attendees)):
+        check_email_validity(attendees[i]['email'], i)    
+
+    # Checking for Event time
     if start_date == "" or start_date == None:
         raise ValueError('Event must have a start date')
     # Add check for time format
+    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    try:
+        # Checking for yyyy-mm-dd format
+        datetime.datetime.strptime(start_date, '%Y-%M-%d')
+    except ValueError:
+        date_as_list = start_date.split("-")
+        try:
+            # Checking if overall formatting is correct ex: using '/' instead of '-' to separate the date
+            temp = date_as_list[-2]
+        except IndexError:
+            raise ValueError("Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+        else:
+            # Assuming input is following dd-MON-yy
+            month = 0
+            # Identifying which month was inputted based on the MONTHS list above
+            for i in range(MONTHS):
+                if date_as_list[1] == MONTHS[i]:
+                    month = i+1
+            # If month was not identified, assume that input was of wrong format; else reconstruct date
+            if month == 0:
+                raise ValueError("Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+            else:
+                start_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+            # Test if date is of acceptable format using datetime package
+            try:
+                datetime.datetime.strptime(start_date, '%d-%M-%y')
+            except ValueError:
+                raise ValueError("Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+
+
     if end_date == "" or end_date == None:
         raise ValueError('Event must have an end date')
     # Add check for time format
+    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    try:
+        # Checking for yyyy-mm-dd format
+        datetime.datetime.strptime(end_date, '%Y-%M-%d')
+    except ValueError:
+        date_as_list = end_date.split("-")
+        try:
+            # Checking if overall formatting is correct ex: using '/' instead of '-' to separate the date
+            temp = date_as_list[-2]
+        except IndexError:
+            raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+        else:
+            # Assuming input is following dd-MON-yy
+            month = 0
+            # Identifying which month was inputted based on the MONTHS list above
+            for i in range(MONTHS):
+                if date_as_list[1] == MONTHS[i]:
+                    month = i+1
+            # If month was not identified, assume that input was of wrong format; else reconstruct date
+            if month == 0:
+                raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+            else:
+                end_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+            # Test if date is of acceptable format using datetime package
+            try:
+                datetime.datetime.strptime(end_date, '%d-%M-%y')
+            except ValueError:
+                raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
 
 
 
-    if event.summary == "":
-        valid = False
-    if event.location == "":
-        valid = False
-    if len(event.attendees) == 0:
-        valid = False
-    if event.start == "":
-        valid = False
-    return valid
-
-
-def start_new_event():
+def start_new_event(api):
     organiser_status = None
     while organiser_status == None:
-        organiser_confirmation = input("Are you the organiser? Y/N")
+        organiser_confirmation = input("Are you the organiser? Y/N : ")
         if organiser_confirmation.upper() == 'Y':
             organiser_status = True
         elif organiser_confirmation.upper() == 'N':
             organiser_status = False
 
     
-    summary = input("Insert Event Name")
+    summary = input("Insert Event Name : ")
 
-    location = input("Insert location of event")
+    location = input("Insert location of event : ")
 
     list_of_attendees = []
-    number_of_attendees = input("Please enter the number of attendees")
-    for i in range(number_of_attendees):
-        email = input("Input attendee " + str(i) + "'s email" )
-        attendee = Attendee(email)
+    number_of_attendees = input("Please enter the number of attendees : ")
+    for i in range(int(number_of_attendees)):
+        email = input("Input attendee " + str(i+1) + "'s email : " )
+        attendee = {'email':'{email_to_insert}'.format(email_to_insert = email) }
         list_of_attendees.append(attendee)
 
-    start_date = input("Insert a start date")
+    start_date = input("Insert a start date : ")
     start = '{date}T09:00:00-07:00'.format(date=start_date)
 
-    end_date = input("Insert a end date")
-    end = '{date}T17:00:00-07:00'.format(time=end_date)
+    end_date = input("Insert a end date : ")
+    end = '{date}T17:00:00-07:00'.format(date=end_date)
 
     check_event_input(summary, location, list_of_attendees, start_date, end_date)
 
     event = Event(summary, location, list_of_attendees, start, end)
 
+    event_output = api.events().insert(calendarId='primary', body=event.get_JSON_format()).execute()
+
+    if event_output['id'] != None:
+        event.add_id(event_output['id'])
+
+    return event_output
+
+
 
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+
 
     events = get_upcoming_events(api, time_now, 10)
 
@@ -143,6 +246,13 @@ def main():
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
+    
+    temp = start_new_event(api)
+    print(temp)
+    
+
+
+    
     
 
 
