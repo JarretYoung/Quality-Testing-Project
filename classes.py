@@ -13,22 +13,22 @@ class Event():
         self.start = start
         self.end = end
 
+    def add_id(self, id):
+        self.id = id
+
     def get_JSON_format(self):
         json = {
-        'summary': '{location}'.format(time=self.location),
+        'summary': '{name}'.format(name=self.summary),
         'location': '{location}'.format(location=self.location),
         'description': '',
         'start': {
             'dateTime': '{time}'.format(time=self.start),
-            'timeZone': 'America/Los_Angeles',
+            'timeZone': 'Asia/Singapore',
         },
         'end': {
             'dateTime': '{time}'.format(time=self.end),
-            'timeZone': 'America/Los_Angeles',
+            'timeZone': 'Asia/Singapore',
         },
-        'recurrence': [
-            'RRULE:FREQ=DAILY;COUNT=2'
-        ],
         'attendees': self.attendees,
         'reminders': {
             'useDefault': False,
