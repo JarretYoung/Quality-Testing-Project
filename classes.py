@@ -53,4 +53,3 @@ class Organiser():
     def __init__(self,displayName, email, id ) -> None:
         self.name = displayName
         self.email = email
-        self.id = id
