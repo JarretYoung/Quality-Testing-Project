@@ -13,7 +13,7 @@
 # http://googleapis.github.io/google-api-python-client/docs/dyn/calendar_v3.html
 
 
-# Code adapted from https://developers.google.com/calendar/quickstart/python
+# Code adapted from https://developers.google.gtcom/calendar/quickstart/python
 from __future__ import print_function
 import datetime
 import pickle
