@@ -74,5 +74,5 @@ class Application():
         lastest_event_index = len(self.event_list) - len(options_to_delete)
         # slice list as such list[(big_len - small_len) :]
 
-    def cancel_event(self, apu):
+    def cancel_event(self, api):
         pass
