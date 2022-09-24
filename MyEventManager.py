@@ -15,10 +15,12 @@
 
 # Code adapted from https://developers.google.com/calendar/quickstart/python
 from __future__ import print_function
+from aifc import Error
 import datetime
 import pickle
 import os.path
 from tracemalloc import start
+from xml.dom import ValidationErr
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -59,18 +61,31 @@ def get_calendar_api():
     return build('calendar', 'v3', credentials=creds)
 
 
-def get_upcoming_events(api, starting_time, number_of_events):
+def get_upcoming_events(api, starting_time):
     """
     Shows basic usage of the Google Calendar API.
     Prints the start and name of the next n events on the user's calendar.
     """
-    if (number_of_events <= 0):
-        raise ValueError("Number of events must be at least 1.")
+    # if (number_of_events <= 0):
+    #     raise ValueError("Number of events must be at least 1.")
 
-    events_result = api.events().list(calendarId='primary', timeMin=starting_time,
-                                      maxResults=number_of_events, singleEvents=True,
+    events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
+                                      singleEvents=True,
+                                      orderBy='startTime').execute()
+    # events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
+    #                                   maxResults=number_of_events, singleEvents=True,
+    #                                   orderBy='startTime').execute()
+    return events_result.get('items', [])
+
+def get_all_events(api):
+    """
+    Returns all the events 
+    """
+
+    events_result = api.events().list(calendarId='primary', timeMin='2010-01-01T07:35:12.084923Z', timeMax ='2050-01-01T07:35:12.084923Z', singleEvents=True,
                                       orderBy='startTime').execute()
     return events_result.get('items', [])
+
 
 def check_email_validity(email, attendee_number):
     """
@@ -202,7 +217,6 @@ def start_new_event(api):
             organiser_status = True
         elif organiser_confirmation.upper() == 'N':
             organiser_status = False
-
     
     summary = input("Insert Event Name : ")
 
@@ -215,22 +229,32 @@ def start_new_event(api):
         attendee = {'email':'{email_to_insert}'.format(email_to_insert = email) }
         list_of_attendees.append(attendee)
 
-    start_date = input("Insert a start date : ")
+    start_date = input("Insert a start date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
     start = '{date}T09:00:00-07:00'.format(date=start_date)
 
-    end_date = input("Insert a end date : ")
+    end_date = input("Insert a end date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
     end = '{date}T17:00:00-07:00'.format(date=end_date)
 
     check_event_input(summary, location, list_of_attendees, start_date, end_date)
 
-    event = Event(summary, location, list_of_attendees, start, end)
+    event = Event(None, summary, location, None, None, list_of_attendees, start, end)
 
     event_output = api.events().insert(calendarId='primary', body=event.get_JSON_format()).execute()
 
     if event_output['id'] != None:
         event.add_id(event_output['id'])
+        event.add_creator(event_output['creator'])
+        event.add_organiser(event_output['organizer'])
 
-    return event_output
+    return event
+
+def delete_existing_event(api, event_id, event_date, current_date):
+    # Check if < current date ; if not then abort
+    if event_date < current_date:
+        raise ValueError('You cannot delete an event that has already passed')
+
+    # delete using api
+    api.events().delete(calendarId='primary', eventId=event_id).execute()
 
 
 
@@ -239,7 +263,8 @@ def main():
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
 
-    events = get_upcoming_events(api, time_now, 10)
+    # events = get_upcoming_events(api, time_now, 10)
+    events = get_all_events(api)
 
     if not events:
         print('No upcoming events found.')
@@ -247,8 +272,8 @@ def main():
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
     
-    temp = start_new_event(api)
-    print(temp)
+    # temp = start_new_event(api)
+    # print(temp)
     
 
 
