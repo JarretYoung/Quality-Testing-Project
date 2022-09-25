@@ -209,7 +209,7 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
 
 
 
-def start_new_event(api, summary, location, creator, organizer, list_of_attendees, start_date, end_date):
+def start_new_event(api, summary, location, list_of_attendees, start_date, end_date):
 
     check_event_input(summary, location, list_of_attendees, start_date, end_date)
 
