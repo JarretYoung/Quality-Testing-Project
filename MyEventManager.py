@@ -108,7 +108,7 @@ def check_email_validity(email, attendee_number):
     else:
         raise ValueError("Attendee {number}'s email is invalid".format(number = attendee_number + 1))
 
-def check_event_input(summary, location, attendees, start_date, end_date):
+def check_event_input(summary, location, creator, organizer, attendees, start_date, end_date):
     valid = True
     # Checking for Event name
     if summary == "" or summary == None:
@@ -160,7 +160,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
-            for i in range(MONTHS):
+            for i in range(len(MONTHS)):
                 if date_as_list[1] == MONTHS[i]:
                     month = i+1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -193,7 +193,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
-            for i in range(MONTHS):
+            for i in range(len(MONTHS)):
                 if date_as_list[1] == MONTHS[i]:
                     month = i+1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -209,33 +209,42 @@ def check_event_input(summary, location, attendees, start_date, end_date):
 
 
 
-def start_new_event(api):
-    organiser_status = None
-    while organiser_status == None:
-        organiser_confirmation = input("Are you the organiser? Y/N : ")
-        if organiser_confirmation.upper() == 'Y':
-            organiser_status = True
-        elif organiser_confirmation.upper() == 'N':
-            organiser_status = False
-    
-    summary = input("Insert Event Name : ")
-
-    location = input("Insert location of event : ")
-
-    list_of_attendees = []
-    number_of_attendees = input("Please enter the number of attendees : ")
-    for i in range(int(number_of_attendees)):
-        email = input("Input attendee " + str(i+1) + "'s email : " )
-        attendee = {'email':'{email_to_insert}'.format(email_to_insert = email) }
-        list_of_attendees.append(attendee)
-
-    start_date = input("Insert a start date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
-    start = '{date}T09:00:00-07:00'.format(date=start_date)
-
-    end_date = input("Insert a end date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
-    end = '{date}T17:00:00-07:00'.format(date=end_date)
+def start_new_event(api, summary, location, creator, organizer, list_of_attendees, start_date, end_date):
 
     check_event_input(summary, location, list_of_attendees, start_date, end_date)
+
+    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    try:
+        # Checking for yyyy-mm-dd format
+        datetime.datetime.strptime(start_date, '%Y-%M-%d')
+    except ValueError:
+        date_as_list = start_date.split("-")
+        # Assuming input is following dd-MON-yy
+        month = 0
+        # Identifying which month was inputted based on the MONTHS list above
+        for i in range(len(MONTHS)):
+            if date_as_list[1] == MONTHS[i]:
+                month = i+1
+        # Reconstruct date
+        start_date = '20{year}-{MONTH}-{day}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+    finally:
+        start = '{date}T09:00:00-07:00'.format(date=start_date)
+    
+    try:
+        # Checking for yyyy-mm-dd format
+        datetime.datetime.strptime(end_date, '%Y-%M-%d')
+    except ValueError:
+        date_as_list = end_date.split("-")
+        # Assuming input is following dd-MON-yy
+        month = 0
+        # Identifying which month was inputted based on the MONTHS list above
+        for i in range(len(MONTHS)):
+            if date_as_list[1] == MONTHS[i]:
+                month = i+1
+        # Reconstruct date
+        end_date = '20{year}-{MONTH}-{day}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+    finally:
+        end = '{date}T17:00:00-07:00'.format(date=end_date)
 
     event = Event(None, summary, location, None, None, list_of_attendees, start, end)
 
@@ -250,8 +259,8 @@ def start_new_event(api):
 
 def delete_existing_event(api, event_id, event_date, current_date):
     # Check if < current date ; if not then abort
-    if event_date < current_date:
-        raise ValueError('You cannot delete an event that has already passed')
+    if event_date >= current_date:
+        raise ValueError('You can only delete past events')
 
     # delete using api
     api.events().delete(calendarId='primary', eventId=event_id).execute()
