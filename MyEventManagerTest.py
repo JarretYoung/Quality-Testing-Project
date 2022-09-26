@@ -360,7 +360,7 @@ class MyEventManagerTest(unittest.TestCase):
 
 class AddAttendeeTest(unittest.TestCase):
     def setUp(self):
-        self.exampleReturnedEvent = {'attendees': [{'email': 'jetyip123@hotmail.com', 
+        self.addFirstAttendeeTest = {'attendees': [{'email': 'jetyip123@hotmail.com', 
                                                     'responseStatus': 'needsAction'}],
                                         'kind': 'calendar#event', 
                                       'etag': '"3328225280887000"', 
@@ -379,7 +379,7 @@ class AddAttendeeTest(unittest.TestCase):
                                       'sequence': 0,
                                       'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
                                       'eventType': 'default'}
-        self.exampleAddedAttendeeEvent = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
+        self.addSecondAttendeeTest = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
                                                          {'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'}],
                                         'kind': 'calendar#event', 
                                       'etag': '"3328225280887000"', 
@@ -398,8 +398,7 @@ class AddAttendeeTest(unittest.TestCase):
                                       'sequence': 0,
                                       'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
                                       'eventType': 'default'}
-        self.exampleMaxedAttendeeEvent = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
-                                                         {'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
+        self.maxAttendeeAmountTest = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
                                                          {'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
                                                          {'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
                                                          {'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'},
@@ -427,7 +426,7 @@ class AddAttendeeTest(unittest.TestCase):
                                       'sequence': 0,
                                       'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
                                       'eventType': 'default'}
-        self.exampleEventLaterThan2050 = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'}],
+        self.setEventLaterThan2050Test = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'}],
                                         'kind': 'calendar#event', 
                                       'etag': '"3328225280887000"', 
                                       'id': '5nj9311jsdhg2uq1tj1fqblaj8', 
@@ -445,58 +444,111 @@ class AddAttendeeTest(unittest.TestCase):
                                       'sequence': 0,
                                       'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
                                       'eventType': 'default'}
-        self.exampleEventNotOrganiser = {'attendees': [{'displayName': 'George Tan2',
-                                                        'email': 'georgetan.business@gmail.com',
-                                                        'responseStatus': 'needsAction'}],
-                                         'created': '2022-09-19T09:26:44.000Z',
-                                         'creator': {'email': 'gtan0021@student.monash.edu', 'self': True},
-                                         'end': {'dateTime': '2034-09-24T08:00:00+08:00', 'timeZone': 'Asia/Singapore'},
-                                         'etag': '"3327296458490000"',
-                                         'eventType': 'default',
-                                         'htmlLink': 'https://www.google.com/calendar/event?eid=YTMwNGhpaGFpa2M2a2hkbHBiYmIycHJubGsgZ3RhbjAwMjFAc3R1ZGVudC5tb25hc2guZWR1',
-                                         'iCalUID': 'a304hihaikc6khdlpbbb2prnlk@google.com',
-                                         'id': 'a304hihaikc6khdlpbbb2prnlk',
-                                         'kind': 'calendar#event',
-                                         'location': 'Somewhere',
-                                         'organizer': {'email': 'georgetan615@gmail.com'},
-                                         'reminders': {'useDefault': True},
-                                         'sequence': 2,
-                                         'start': {'dateTime': '2020-09-19T08:00:00+08:00',
-                                                   'timeZone': 'Asia/Singapore'},
-                                         'status': 'confirmed',
-                                         'summary': 'Networking Session',
-                                         'updated': '2022-09-20T04:30:29.245Z'}
 
-    def test_eventLaterThan2050(self):
+    def test_event_later_than_2050(self):
         mock_api = Mock()
         eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
-        mock_api.events.return_value.get.return_value.execute.return_value = self.exampleEventLaterThan2050
+        mock_api.events.return_value.get.return_value.execute.return_value = self.setEventLaterThan2050Test
         self.assertEqual(False, MyEventManager.addAttendee(
             mock_api, eventId, 'jetyip123@hotmail.com'))
 
-    def test_isNotOrganizer(self):
-        mock_api = Mock()
+    def test_number_of_attendee_maxed(self):
+        mock_api = MagicMock()
         eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
-        mock_api.events.return_value.get.return_value.execute.return_value = self.exampleEventNotOrganiser
+        mock_api.events.return_value.get.return_value.execute.return_value = self.maxAttendeeAmountTest
         self.assertEqual(False, MyEventManager.addAttendee(
-            mock_api, eventId, 'jetyip123@hotmail.com'))
+            mock_api, eventId, 'jetyip@hotmail.my'))
 
-    def test_numberOfAttendeeMaxed(self):
+    def test_add_attendee(self):
         mock_api = Mock()
         eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
-        mock_api.events.return_value.get.return_value.execute.return_value = self.exampleMaxedAttendeeEvent
-        self.assertEqual(False, MyEventManager.addAttendee(
-            mock_api, eventId, 'jetyip123@hotmail.com'))
-
-    def test_addAttendee(self):
-        mock_api = Mock()
-        eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
-        mock_api.events.return_value.get.return_value.execute.return_value = self.exampleReturnedEvent
-        nbrOfInitialAttendees = len(self.exampleReturnedEvent['attendees'])
-        mock_api.events.return_value.patch.return_value.execute.return_value = self.exampleAddedAttendeeEvent
-        self.assertEqual(nbrOfInitialAttendees+1, len(MyEventManager.addAttendee(
+        mock_api.events.return_value.get.return_value.execute.return_value = self.addFirstAttendeeTest
+        initialAttendeeAmount = len(self.addFirstAttendeeTest['attendees'])
+        mock_api.events.return_value.patch.return_value.execute.return_value = self.addSecondAttendeeTest
+        self.assertEqual(initialAttendeeAmount+1, len(MyEventManager.addAttendee(
             mock_api, eventId, 'jetyip123@hotmail.com')))
 
+class RemoveAttendeeTest(unittest.TestCase):
+    def setUp(self): 
+        self.addFirstAttendeeTest = {'attendees': [{'email': 'jetyip123@hotmail.com', 
+                                                    'responseStatus': 'needsAction'}],
+                                        'kind': 'calendar#event', 
+                                      'etag': '"3328225280887000"', 
+                                      'id': '5nj9311jsdhg2uq1tj1fqblaj8', 
+                                      'status': 'confirmed',
+                                      'htmlLink': 'https://www.google.com/calendar/event?eid=NW5qOTMxMWpzZGhnMnVxMXRqMWZxYmxhajgga3lpcDAwMDdAc3R1ZGVudC5tb25hc2guZWR1',
+                                      'created': '2022-09-25T13:30:40.000Z', 
+                                      'updated': '2022-09-25T13:30:40.491Z', 
+                                      'summary': 'Monash Test 2',
+                                      'location': '98 Shirley Street PIMPAMA QLD 4209', 
+                                      'creator': {'email': 'kyip0007@student.monash.edu', 'self': True},
+                                      'organizer': {'email': 'kyip0007@student.monash.edu', 'self': True}, 
+                                      'start': {'dateTime': '2022-09-25T00:00:00+08:00', 'timeZone': 'Asia/Singapore'}, 
+                                      'end': {'dateTime': '2022-09-26T08:00:00+08:00', 'timeZone': 'Asia/Singapore'},
+                                      'iCalUID': '5nj9311jsdhg2uq1tj1fqblaj8@google.com', 
+                                      'sequence': 0,
+                                      'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
+                                      'eventType': 'default'}
+        self.removeAttendeeTest = {'attendees': [],
+                                        'kind': 'calendar#event', 
+                                      'etag': '"3328225280887000"', 
+                                      'id': '5nj9311jsdhg2uq1tj1fqblaj8', 
+                                      'status': 'confirmed',
+                                      'htmlLink': 'https://www.google.com/calendar/event?eid=NW5qOTMxMWpzZGhnMnVxMXRqMWZxYmxhajgga3lpcDAwMDdAc3R1ZGVudC5tb25hc2guZWR1',
+                                      'created': '2022-09-25T13:30:40.000Z', 
+                                      'updated': '2022-09-25T13:30:40.491Z', 
+                                      'summary': 'Monash Test 2',
+                                      'location': '98 Shirley Street PIMPAMA QLD 4209', 
+                                      'creator': {'email': 'kyip0007@student.monash.edu', 'self': True},
+                                      'organizer': {'email': 'kyip0007@student.monash.edu', 'self': True}, 
+                                      'start': {'dateTime': '2022-09-25T00:00:00+08:00', 'timeZone': 'Asia/Singapore'}, 
+                                      'end': {'dateTime': '2022-09-26T08:00:00+08:00', 'timeZone': 'Asia/Singapore'},
+                                      'iCalUID': '5nj9311jsdhg2uq1tj1fqblaj8@google.com', 
+                                      'sequence': 0,
+                                      'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
+                                      'eventType': 'default'}
+        self.setEventLaterThan2050Test = {'attendees': [{'email': 'jetyip123@hotmail.com', 'responseStatus': 'needsAction'}],
+                                        'kind': 'calendar#event', 
+                                      'etag': '"3328225280887000"', 
+                                      'id': '5nj9311jsdhg2uq1tj1fqblaj8', 
+                                      'status': 'confirmed',
+                                      'htmlLink': 'https://www.google.com/calendar/event?eid=NW5qOTMxMWpzZGhnMnVxMXRqMWZxYmxhajgga3lpcDAwMDdAc3R1ZGVudC5tb25hc2guZWR1',
+                                      'created': '2022-09-25T13:30:40.000Z', 
+                                      'updated': '2022-09-25T13:30:40.491Z', 
+                                      'summary': 'Monash Test 2',
+                                      'location': '98 Shirley Street PIMPAMA QLD 4209', 
+                                      'creator': {'email': 'kyip0007@student.monash.edu', 'self': True},
+                                      'organizer': {'email': 'kyip0007@student.monash.edu', 'self': True}, 
+                                      'start': {'dateTime': '2051-09-25T00:00:00+08:00', 'timeZone': 'Asia/Singapore'}, 
+                                      'end': {'dateTime': '2052-09-26T08:00:00+08:00', 'timeZone': 'Asia/Singapore'},
+                                      'iCalUID': '5nj9311jsdhg2uq1tj1fqblaj8@google.com', 
+                                      'sequence': 0,
+                                      'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 1440}]},
+                                      'eventType': 'default'}
+
+    
+    def test_event_later_than_2050(self):
+        mock_api = Mock()
+        eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
+        mock_api.events.return_value.get.return_value.execute.return_value = self.setEventLaterThan2050Test
+        self.assertEqual(False,MyEventManager.removeAttendee(mock_api,eventId,'jetyip123@hotmail.com'))
+
+
+    def test_remove_non_attendee(self):
+        mock_api = Mock()
+        eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
+        mock_api.events.return_value.get.return_value.execute.return_value = self.addFirstAttendeeTest
+        initialAttendeeAmount = len(self.addFirstAttendeeTest['attendees'])
+        mock_api.events.return_value.patch.return_value.execute.return_value = self.addFirstAttendeeTest
+        self.assertEqual(initialAttendeeAmount,len(MyEventManager.removeAttendee(mock_api,eventId,'jetyip@hotmail.com')))
+
+    def test_remove_attendee(self):
+        mock_api = Mock()
+        eventId = '5nj9311jsdhg2uq1tj1fqblaj8'
+        mock_api.events.return_value.get.return_value.execute.return_value = self.addFirstAttendeeTest
+        initialAttendeeAmount = len(self.addFirstAttendeeTest['attendees'])
+        mock_api.events.return_value.patch.return_value.execute.return_value = self.removeAttendeeTest
+        self.assertEqual(initialAttendeeAmount-1,len(MyEventManager.removeAttendee(mock_api,eventId,'jetyip123@hotmail.com')))
 
 def main():
     # Create the test suite from the cases above.
