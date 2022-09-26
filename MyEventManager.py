@@ -112,7 +112,7 @@ def check_email_validity(email, attendee_number):
         raise ValueError("Attendee {number}'s email is invalid".format(number=attendee_number + 1))
 
 
-def check_event_input(summary, location, attendees, start_date, end_date):
+def check_event_input(summary, location, creator, organizer, attendees, start_date, end_date):
     valid = True
     # Checking for Event name
     if summary == "" or summary == None:
@@ -166,7 +166,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
-            for i in range(MONTHS):
+            for i in range(len(MONTHS)):
                 if date_as_list[1] == MONTHS[i]:
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -200,7 +200,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
-            for i in range(MONTHS):
+            for i in range(len(MONTHS)):
                 if date_as_list[1] == MONTHS[i]:
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -215,6 +215,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
                 raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
             
 
+<<<<<<< HEAD
 def start_new_event(api):
     organiser_status = None
     while organiser_status == None:
@@ -240,8 +241,44 @@ def start_new_event(api):
 
     end_date = input("Insert a end date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
     end = '{date}T17:00:00-07:00'.format(date=end_date)
+=======
+def start_new_event(api, summary, location, list_of_attendees, start_date, end_date):
+>>>>>>> dc6eb9ead20765f67901b880467244b3f10cfadb
 
     check_event_input(summary, location, list_of_attendees, start_date, end_date)
+
+    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    try:
+        # Checking for yyyy-mm-dd format
+        datetime.datetime.strptime(start_date, '%Y-%M-%d')
+    except ValueError:
+        date_as_list = start_date.split("-")
+        # Assuming input is following dd-MON-yy
+        month = 0
+        # Identifying which month was inputted based on the MONTHS list above
+        for i in range(len(MONTHS)):
+            if date_as_list[1] == MONTHS[i]:
+                month = i+1
+        # Reconstruct date
+        start_date = '20{year}-{MONTH}-{day}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+    finally:
+        start = '{date}T09:00:00-07:00'.format(date=start_date)
+    
+    try:
+        # Checking for yyyy-mm-dd format
+        datetime.datetime.strptime(end_date, '%Y-%M-%d')
+    except ValueError:
+        date_as_list = end_date.split("-")
+        # Assuming input is following dd-MON-yy
+        month = 0
+        # Identifying which month was inputted based on the MONTHS list above
+        for i in range(len(MONTHS)):
+            if date_as_list[1] == MONTHS[i]:
+                month = i+1
+        # Reconstruct date
+        end_date = '20{year}-{MONTH}-{day}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+    finally:
+        end = '{date}T17:00:00-07:00'.format(date=end_date)
 
     event = Event(None, summary, location, None, None, list_of_attendees, start, end)
 
@@ -260,8 +297,8 @@ def start_new_event(api):
 
 def delete_existing_event(api, event_id, event_date, current_date):
     # Check if < current date ; if not then abort
-    if event_date < current_date:
-        raise ValueError('You cannot delete an event that has already passed')
+    if event_date >= current_date:
+        raise ValueError('You can only delete past events')
 
     # delete using api
     api.events().delete(calendarId='primary', eventId=event_id).execute()
