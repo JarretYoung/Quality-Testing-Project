@@ -51,5 +51,8 @@ class Event():
         }
         return json
 
-
+class Attendee:
+	def __init__(self,email,isOwner=False):
+		self.email = email
+		self.isOwner = isOwner
 

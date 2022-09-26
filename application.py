@@ -219,3 +219,5 @@ class Application():
         self.event_list.append(restored_event)
             
 
+    def cancel_event(self, api):
+        pass
