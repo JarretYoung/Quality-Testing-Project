@@ -37,6 +37,11 @@ from classes import *
 from datetime import *
 import datetime
 import re
+<<<<<<< Updated upstream
+=======
+import json
+from googleapiclient import errors
+>>>>>>> Stashed changes
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -175,7 +180,11 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
+<<<<<<< Updated upstream
             for i in range(MONTHS):
+=======
+            for i in range(len(MONTHS)):
+>>>>>>> Stashed changes
                 if date_as_list[1] == MONTHS[i]:
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -209,7 +218,11 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
+<<<<<<< Updated upstream
             for i in range(MONTHS):
+=======
+            for i in range(len(MONTHS)):
+>>>>>>> Stashed changes
                 if date_as_list[1] == MONTHS[i]:
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -266,8 +279,15 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
 
     if event_output['id'] != None:
         event.add_id(event_output['id'])
+<<<<<<< Updated upstream
         event.add_creator(event_output['creator'])
         event.add_organiser(event_output['organizer'])
+=======
+        event.add_creator(event_output['creator']['email'])
+        event.add_organiser(event_output['organizer']['email'])
+        event.add_start(event_output['start'])
+        event.add_end(event_output['end'])
+>>>>>>> Stashed changes
 
     return event
 
@@ -281,6 +301,227 @@ def delete_existing_event(api, event_id, event_date, current_date):
     api.events().delete(calendarId='primary', eventId=event_id).execute()
 
 
+<<<<<<< Updated upstream
+=======
+def addAttendee(api, eventId, newAttendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+
+        eventLaterThan2050 = isEventLaterThan2050(event)
+        if eventLaterThan2050:
+            raise Exception("Can't edit event that is later than 2050")
+
+        attendees = event['attendees']
+        initialAttendeeAmount = len(attendees)
+
+        if initialAttendeeAmount == 20:
+            raise Exception("Event has reached a maximum of 20 attendees")
+
+        attendees.append({"email": newAttendeeEmail})
+        updatedEvent = api.events().patch(calendarId='primary', eventId=eventId, body={"attendees": attendees},
+                                          sendUpdates="all").execute()
+
+        if (len(updatedEvent['attendees']) == initialAttendeeAmount):
+            print(f'{newAttendeeEmail} is already an attendee in this event')
+        else:
+            print(
+                f'{newAttendeeEmail} was added to event {eventId} on {updatedEvent["updated"]}.')
+
+        return updatedEvent['attendees']
+    except Exception as e:
+        print(e)
+        print(
+            f'{newAttendeeEmail} was not added successfully to event {eventId} as attendee.')
+        return False
+
+
+def removeAttendee(api, eventId, attendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+
+        eventLaterThan2050 = isEventLaterThan2050(event)
+        if eventLaterThan2050:
+            raise Exception("Can't edit event that is later than 2050")
+
+        attendees = event['attendees']
+        initialAttendeeAmount = len(attendees)
+        # get attendees that are not attendeeEmail
+        attendees = list(
+            filter(lambda attendee: attendee['email'] != attendeeEmail, attendees))
+        updatedEvent = api.events().patch(calendarId='primary', eventId=eventId, body={
+            "attendees": attendees}, sendUpdates="all").execute()  # update event with new attendee list
+
+        if len(attendees) == (initialAttendeeAmount - 1):
+            print(
+                f'{attendeeEmail} was removed from event {eventId} on {updatedEvent["updated"]}.')
+        else:
+            print(f'{attendeeEmail} is not an attendee in this event.')
+        return updatedEvent['attendees']
+    except Exception as e:
+        print(e)
+        print(
+            f'{attendeeEmail} was not removed successfully from event {eventId} as attendee')
+        return False
+
+
+def isEventLaterThan2050(event):
+    # Directly obtain first 4 characters of date to get year
+    startYear, endYear = int(event['start']['dateTime'][:4]), int(
+        event['end']['dateTime'][:4])
+    if startYear > 2050 or endYear > 2050:
+        return True
+    return False
+
+
+def importEventFromJSON(api, eventJSON):
+    '''
+    Loads a JSON file in valid format and adds as event
+    '''
+    try:
+        f = open(eventJSON)
+        event = json.load(f)
+        event = api.events().insert(calendarId='primary', body=event).execute()
+        print(f'Event created: %s' % (event.get("htmlLink")))
+        return True
+
+    except FileNotFoundError as e:
+        print(e)
+        return "File not found"
+
+    except json.JSONDecodeError as e:
+        print(e)
+        return "Incorrect JSON file format"
+
+    except Exception as e:
+        print(e)
+        return "Event was not created successfully"
+
+
+def exportEventToJson(api, eventId, exportDestination=None):
+    '''
+    Exports an event into JSON file.
+    '''
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+        fileName = '_'.join(event['summary'].split()) + ".json"
+
+        if not exportDestination:
+            path = fileName
+        else:
+            exportDestination = exportDestination.split("/")
+            exportDestination.append(fileName)
+            path = os.path.join(*exportDestination)
+
+        with open(path, "w") as outfile:
+            json.dump(event, outfile, indent=4)
+        print(f"Event JSON file created at {path}")
+        return path
+
+    except FileNotFoundError:
+        print("Directory not found")
+        return False
+
+
+def update_event(api, i, event_id):
+    event = api.events().get(calendarId='primary', eventId=event_id).execute()
+
+    if i == "1":
+        event['summary'] = input("Please enter your new event name: ")
+
+    elif i == "2":
+        start_date = input("Please enter start date: ")
+        end_date = input("Please enter end date: ")
+        check_date_start = start_date.split('-')
+        today = date.today()
+        today = (str(today)).split("-")
+
+        # check if the date set to past
+        if len(check_date_start[0]) == 4:
+            if datetime.datetime(int(check_date_start[0]), int(check_date_start[1]),
+                                 int(check_date_start[2])) < datetime.datetime(int(today[0]), int(today[1]),
+                                                                               int(today[2])):
+                # raise ValueError('Cannot create an event in past')
+                print('Cannot create an event in past')
+                return
+        elif len(check_date_start[0]) == 2:
+            check_date_start[2] = int('20' + check_date_start[2])
+            if datetime.datetime(int(check_date_start[0]), int(check_date_start[1]),
+                                 int(check_date_start[2])) < datetime.datetime(int(today[2]), int(today[1]),
+                                                                               int(today[0])):
+                raise ValueError('Cannot create an event in past')
+
+        # check if the date set over 2050
+        if (len(check_date_start[0]) == 4 and int(check_date_start[0]) < 2050) or len(check_date_start[0]) == 2 and \
+                check_date_start[2] < 50:
+            start = '{date}T09:00:00-07:00'.format(date=start_date)
+        else:
+            # raise ValueError('No later than 2050')
+            print("'No later than 2050'")
+            return
+
+        check_date_end = end_date.split('-')
+        if (len(check_date_end[0]) == 4 and int(check_date_end[0]) < 2050) or len(check_date_end[0]) == 2 and \
+                int(check_date_end[2]) < 50:
+            end = '{date}T17:00:00-07:00'.format(date=end_date)
+        else:
+            # raise ValueError('No later than 2050')
+            print("'No later than 2050'")
+            return
+        event.start['dateTime'] = start
+        event.end['dateTime'] = end
+
+    elif i == "3":
+        new_location = input('Please input your new event location: ')
+        # lst_locattion = []
+        # lst.append(new_location)
+        # event['location'] = list(new_location)
+        event.location = list(new_location)
+
+    elif i == '4':
+        change_event_owner(api, event_id)
+
+    elif i == "5":
+        act = input('Please choose an option : add / delete')
+        if act == 'add' or act == 'delete':
+            modify_attendees(event, act)
+        else:
+            raise ValueError("Please choose a valid option")
+
+    event = api.events().patch(calendarId='primary', eventId=event['id'], body=event).execute()
+
+    # return updated_event
+
+
+def change_event_owner(api, event_id):
+    event = api.events().get(calendarId='primary', eventId=event_id).execute()
+    new_destination = input("Please enter the gmail of the new organiser: ")
+    updated_event = api.events().move(calendarId=new_destination, eventId=event_id,
+                                      destination=new_destination).execute()
+    return updated_event
+
+
+def modify_attendees(event, act):
+    num_attendees = int(input('Please enter the number of the attendees that you want to add/delete: '))
+    if num_attendees == 0:
+        raise ValueError('Should enter atleast 1 attendees')
+
+    if act == 'delete':
+        print('Please enter the email of attendes that you wanted to dlt')
+        count = 0
+        while count < num_attendees:
+            dlt_email = input("Attendee {number}'s email".format(number=count + 1))
+            if event.attendees[count]['email'] == dlt_email:
+                del (event.attendees[count]['email'])
+            else:
+                count += 1
+
+    elif act == 'add':
+        for i in range(num_attendees):
+            add_email = input("Attendee {number}'s email".format(number=i + 1))
+            event.add_attendees(add_email)
+
+
+>>>>>>> Stashed changes
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
@@ -293,6 +534,9 @@ def main():
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
+
+    # temp = start_new_event(api)
+    # print(temp)
 
 
 def update_event(api, i, event_id):
@@ -397,6 +641,7 @@ def modify_attendees(event, act):
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
+<<<<<<< Updated upstream
 #
     api = get_calendar_api()
 #     n = start_new_event(api)
@@ -425,3 +670,6 @@ if __name__ == "__main__":  # Prevents the main() function from being called by 
     # updated_event = api.events().move(calendarId=new_destination, eventId="2i7qq93nkg53jsg98porpvts7i",
     #                                   destination=new_destination).execute()
     # print(updated_event)
+=======
+    main()
+>>>>>>> Stashed changes
