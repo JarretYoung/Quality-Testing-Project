@@ -7,16 +7,16 @@ from datetime import datetime
 
 class Event():
     def __init__(self, id, summary, location, creator, organisor, attendees, start, end) -> None:
-        self.id = id        
-        self.summary = summary
-        self.location = location
-        self.creator = creator
-        self.organiser = organisor
-        self.attendees = []
+        self.id = id                            # To access .id
+        self.summary = summary                  # To access .summary
+        self.location = location                # To access .location
+        self.creator = creator                  # To access .creator['email']
+        self.organiser = organisor              # To access .organiser['email']
+        self.attendees = []                     # To access .attendees[index]['email']
         for attendee in attendees:
             self.attendees.append(attendee)
-        self.start = start
-        self.end = end
+        self.start = start                      # To access .start['dateTime']
+        self.end = end                          # To access .end['dateTime']
 
     def add_id(self, id):
         self.id = id
@@ -26,6 +26,12 @@ class Event():
 
     def add_organiser(self, organiser):
         self.organiser = organiser
+
+    def add_start(self, start):
+        self.start = start
+    
+    def add_end(self, end):
+        self.end = end
 
     def get_JSON_format(self):
         json = {
