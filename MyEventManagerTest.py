@@ -54,100 +54,79 @@ class MyEventManagerTest(unittest.TestCase):
     """
 
     def test_add_event_info_valid_with_physical_location_and_using_yyyy_mm_dd_time_format(self):
-        # Dictating user input
-        user_input = ["2", "Y", "FIT2107 Assignment Test", "123 Fake St. Clayton VIC 3400",
-                      "1", "gyon0004@student.monash.edu", "2023-09-24", "2023-09-25", "e"]
+        # Dictating user input 
+        user_input = ["2","Y","FIT2107 Assignment Test","123 Fake St. Clayton VIC 3400","1","gyon0004@student.monash.edu","2023-09-24","2023-09-25","e"]
         # Simulating user input
         with automatedInputOutput(user_input) as (inGen, outGen):
             mock_api = MagicMock()
-            mock_api.return_value.list.return_value.execute.return_value = {
-                'items': []}
+            mock_api.return_value.list.return_value.execute.return_value = {'items': []}
+            mock_api.events.return_value.insert.return_value.execute.return_value = {'id':'282poiu9aam6ed95vk57vncf6l','creator':{'email':'gyon0004@student.monash.edu'},'organizer':{'email':'gyon0004@student.monash.edu'},'start':{'dateTime':'2023-09-24T09:00:00-07:00'},'end':{'dateTime':'2023-09-25T17:00:00-07:00'}}
             time_now = '2022-09-24T03:29:17.380207Z'
             running_application = Application(mock_api, time_now)
             # Ensure that the lists of events is completely empty for comparison later
-            # Assert that there are no items in the list of events
-            self.assertEqual(0, len(running_application.event_list))
+            self.assertEqual(0, len(running_application.event_list))    # Assert that there are no items in the list of events
             running_application.on_start()
         # At this point, user input has been inputted and a new event has been added
         # Check (and sort of compare) if there is a new item in the list right now
-        # Assert that there is now 1 item in the list of events
-        self.assertEqual(1, len(running_application.event_list))
+        self.assertEqual(1, len(running_application.event_list))    # Assert that there is now 1 item in the list of events
         # Now check the contents of the input to see if it matches up
-        self.assertEqual(
-            running_application.event_list[0].summary, "FIT2107 Assignment Test")
-        self.assertEqual(
-            running_application.event_list[0].location, "123 Fake St. Clayton VIC 3400")
-        self.assertEqual(
-            running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
-        self.assertEqual(
-            running_application.event_list[0].start, "2023-09-24T09:00:00-07:00")
-        self.assertEqual(
-            running_application.event_list[0].end, "2023-09-25T17:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].summary, "FIT2107 Assignment Test")
+        self.assertEqual(running_application.event_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.event_list[0].start['dateTime'], "2023-09-24T09:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].end['dateTime'], "2023-09-25T17:00:00-07:00")
         # Add more tests if needed
+
 
     def test_add_event_info_valid_with_physical_location_and_using_dd_MON_yy_time_format(self):
-        # Dictating user input
-        user_input = ["2", "Y",  "FIT2107 Assignment Test", "123 Fake St. Clayton VIC 3400",
-                      "1", "gyon0004@student.monash.edu", "2023-09-24", "2023-09-25", "e"]
+        # Dictating user input 
+        user_input = ["2","Y",  "FIT2107 Assignment Test", "123 Fake St. Clayton VIC 3400", "1", "gyon0004@student.monash.edu", "2023-09-24", "2023-09-25","e"]
         # Simulating user input
         with automatedInputOutput(user_input) as (inGen, outGen):
             mock_api = MagicMock()
-            mock_api.return_value.list.return_value.execute.return_value = {
-                'items': []}
+            mock_api.return_value.list.return_value.execute.return_value = {'items': []}
+            mock_api.events.return_value.insert.return_value.execute.return_value = {'id':'282poiu9aam6ed95vk57vncf6l','creator':{'email':'gyon0004@student.monash.edu'},'organizer':{'email':'gyon0004@student.monash.edu'},'start':{'dateTime':'2023-09-24T09:00:00-07:00'},'end':{'dateTime':'2023-09-25T17:00:00-07:00'}}
             time_now = '2022-09-24T03:29:17.380207Z'
             running_application = Application(mock_api, time_now)
             # Ensure that the lists of events is completely empty for comparison later
-            # Assert that there are no items in the list of events
-            self.assertEqual(0, len(running_application.event_list))
+            self.assertEqual(0, len(running_application.event_list))    # Assert that there are no items in the list of events
             running_application.on_start()
         # At this point, user input has been inputted and a new event has been added
         # Check (and sort of compare) if there is a new item in the list right now
-        # Assert that there is now 1 item in the list of events
-        self.assertEqual(1, len(running_application.event_list))
+        self.assertEqual(1, len(running_application.event_list))    # Assert that there is now 1 item in the list of events
         # Now check the contents of the input to see if it matches up
-        self.assertEqual(
-            running_application.event_list[0].summary, "FIT2107 Assignment Test")
-        self.assertEqual(
-            running_application.event_list[0].location, "123 Fake St. Clayton VIC 3400")
-        self.assertEqual(
-            running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
-        self.assertEqual(
-            running_application.event_list[0].start, "2023-09-24T09:00:00-07:00")
-        self.assertEqual(
-            running_application.event_list[0].end, "2023-09-25T17:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].summary, "FIT2107 Assignment Test")
+        self.assertEqual(running_application.event_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.event_list[0].start['dateTime'], "2023-09-24T09:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].end['dateTime'], "2023-09-25T17:00:00-07:00")
         # Add more tests if needed
 
+
     def test_add_event_info_valid_with_online_location(self):
-        # Dictating user input
-        user_input = ["2", "Y", "FIT2107 Assignment Test", "https://monash.zoom.us/j/82612757952?pwd=K3RjcVc5bUtwYm9GZ3REb290eG9NZz09",
-                      "1", "gyon0004@student.monash.edu", "2023-09-24", "2023-09-25", "e"]
+        # Dictating user input 
+        user_input = ["2","Y", "FIT2107 Assignment Test", "https://monash.zoom.us/j/82612757952?pwd=K3RjcVc5bUtwYm9GZ3REb290eG9NZz09", "1", "gyon0004@student.monash.edu", "2023-09-24", "2023-09-25","e"]
         # Simulating user input
         with automatedInputOutput(user_input) as (inGen, outGen):
             mock_api = MagicMock()
-            mock_api.return_value.list.return_value.execute.return_value = {
-                'items': []}
+            mock_api.return_value.list.return_value.execute.return_value = {'items': []}
+            mock_api.events.return_value.insert.return_value.execute.return_value = {'id':'282poiu9aam6ed95vk57vncf6l','creator':{'email':'gyon0004@student.monash.edu'},'organizer':{'email':'gyon0004@student.monash.edu'},'start':{'dateTime':'2023-09-24T09:00:00-07:00'},'end':{'dateTime':'2023-09-25T17:00:00-07:00'}}
             time_now = '2022-09-24T03:29:17.380207Z'
             running_application = Application(mock_api, time_now)
             # Ensure that the lists of events is completely empty for comparison later
-            # Assert that there are no items in the list of events
-            self.assertEqual(0, len(running_application.event_list))
+            self.assertEqual(0, len(running_application.event_list))    # Assert that there are no items in the list of events
             running_application.on_start()
         # At this point, user input has been inputted and a new event has been added
         # Check (and sort of compare) if there is a new item in the list right now
-        # Assert that there is now 1 item in the list of events
-        self.assertEqual(1, len(running_application.event_list))
+        self.assertEqual(1, len(running_application.event_list))    # Assert that there is now 1 item in the list of events
         # Now check the contents of the input to see if it matches up
-        self.assertEqual(
-            running_application.event_list[0].summary, "FIT2107 Assignment Test")
-        self.assertEqual(running_application.event_list[0].location,
-                         "https://monash.zoom.us/j/82612757952?pwd=K3RjcVc5bUtwYm9GZ3REb290eG9NZz09")
-        self.assertEqual(
-            running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
-        self.assertEqual(
-            running_application.event_list[0].start, "2023-09-24T09:00:00-07:00")
-        self.assertEqual(
-            running_application.event_list[0].end, "2023-09-25T17:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].summary, "FIT2107 Assignment Test")
+        self.assertEqual(running_application.event_list[0].location, "https://monash.zoom.us/j/82612757952?pwd=K3RjcVc5bUtwYm9GZ3REb290eG9NZz09")
+        self.assertEqual(running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.event_list[0].start['dateTime'], "2023-09-24T09:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].end['dateTime'], "2023-09-25T17:00:00-07:00")
         # Add more tests if needed
+
 
     def test_add_event_info_missing_event_name(self):
         # Dictating user input
@@ -595,43 +574,34 @@ class MyEventManagerTest(unittest.TestCase):
     """
 
     def test_restore_task(self):
-        # Dictating user input
-        user_input = ["6", "1", "e"]
+        # Dictating user input 
+        user_input = ["6","1","e"]
         # Simulating user input
         with automatedInputOutput(user_input) as (inGen, outGen):
             mock_api = MagicMock()
-            mock_api.return_value.list.return_value.execute.return_value = {
-                'items': []}
+            mock_api.return_value.list.return_value.execute.return_value = {'items': []}
+            mock_api.events.return_value.insert.return_value.execute.return_value = {'id':'282poiu9aam6ed95vk57vncf6l','creator':{'email':'gyon0004@student.monash.edu'},'organizer':{'email':'gyon0004@student.monash.edu'},'start':{'dateTime':'2022-09-14T09:00:00-07:00'},'end':{'dateTime':'2022-09-15T17:00:00-07:00'}}
             time_now = '2022-09-20T03:29:17.380207Z'
             running_application = Application(mock_api, time_now)
-            test_event_1 = Event("7k6giqb8k7ck6po83pbof50sij", "FIT2107 Assignment Test", "123 Fake St. Clayton VIC 3400", "gyon0004@student.monash.edu",
-                                 "gyon0004@student.monash.edu", [{'email': 'gyon0004@student.monash.edu'}], "2022-09-14T09:00:00-07:00", "2022-09-15T17:00:00-07:00")
+            test_event_1 = Event("7k6giqb8k7ck6po83pbof50sij", "FIT2107 Assignment Test", "123 Fake St. Clayton VIC 3400", "gyon0004@student.monash.edu", "gyon0004@student.monash.edu", [{'email':'gyon0004@student.monash.edu'}], {'dateTime':'2022-09-14T09:00:00-07:00'},{'dateTime':'2022-09-15T17:00:00-07:00'})
             running_application.archived_event_list.append(test_event_1)
             # Ensure that the lists of events is completely empty for comparison later
-            # Assert that there are no items in the list of events
-            self.assertEqual(0, len(running_application.event_list))
-            # Assert that there is 1 items in the archived list of events
-            self.assertEqual(1, len(running_application.archived_event_list))
+            self.assertEqual(0, len(running_application.event_list))    # Assert that there are no items in the list of events
+            self.assertEqual(1, len(running_application.archived_event_list))    # Assert that there is 1 items in the archived list of events
             running_application.on_start()
-
+        
         # At this point, user input has been inputted and a new event has been added
         # Check (and sort of compare) if there is a new item in the list right now
-        # Assert that there is now 1 item in the list of events
-        self.assertEqual(1, len(running_application.event_list))
-        # Assert the deleted event is stored in the archived event list
-        self.assertEqual(0, len(running_application.archived_event_list))
+        self.assertEqual(1, len(running_application.event_list))    # Assert that there is now 1 item in the list of events
+        self.assertEqual(0, len(running_application.archived_event_list))   # Assert the deleted event is stored in the archived event list
         # Now check the infomation of last remaining item
-        self.assertEqual(
-            running_application.event_list[0].summary, "FIT2107 Assignment Test")
-        self.assertEqual(
-            running_application.event_list[0].location, "123 Fake St. Clayton VIC 3400")
-        self.assertEqual(
-            running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
-        self.assertEqual(
-            running_application.event_list[0].start, "2022-09-14T09:00:00-07:00")
-        self.assertEqual(
-            running_application.event_list[0].end, "2022-09-15T17:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].summary, "FIT2107 Assignment Test")
+        self.assertEqual(running_application.event_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.event_list[0].start['dateTime'], "2022-09-14T09:00:00-07:00")
+        self.assertEqual(running_application.event_list[0].end['dateTime'], "2022-09-15T17:00:00-07:00")
         # Add more tests if needed
+
 
     """
     ===|Event Restore Section End|======================================================================================
