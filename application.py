@@ -33,9 +33,9 @@ class Application():
                 pass #placeholder for updating an event 
             elif input_val == '6':
                 self.restore_event(self.api) 
-            elif input_val == '7':
-                self.import_event() 
             elif input_val == '8':
+                self.import_event() 
+            elif input_val == '7':
                 self.query_events_list = self.query_events()   
             elif (input_val == 'e') or (input_val == 'E'):
                 print('Thank you for using our application!')
@@ -50,8 +50,8 @@ class Application():
         print("4) Cancel Event")
         print("5) Edit Event")
         print("6) Restore Event")
-        print("7) Import Event")
-        print("8) Query Events")
+        print("7) Query Events")
+        print("8) Import Event")
         print("e) Exit Application")
         input_val = -1
         valid_input = ['1','2','3','4','5','6', '7','e','E']
