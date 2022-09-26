@@ -26,7 +26,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from classes import *
 from datetime import *
-import datetime 
+import datetime
 import re
 
 # If modifying these scopes, delete the file token.pickle.
@@ -69,7 +69,8 @@ def get_upcoming_events(api, starting_time):
     # if (number_of_events <= 0):
     #     raise ValueError("Number of events must be at least 1.")
 
-    events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
+    events_result = api.events().list(calendarId='primary', timeMin=starting_time,
+                                      timeMax='2050-01-01T07:35:12.084923Z',
                                       singleEvents=True,
                                       orderBy='startTime').execute()
     # events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
@@ -77,12 +78,14 @@ def get_upcoming_events(api, starting_time):
     #                                   orderBy='startTime').execute()
     return events_result.get('items', [])
 
+
 def get_all_events(api):
     """
     Returns all the events 
     """
 
-    events_result = api.events().list(calendarId='primary', timeMin='2010-01-01T07:35:12.084923Z', timeMax ='2050-01-01T07:35:12.084923Z', singleEvents=True,
+    events_result = api.events().list(calendarId='primary', timeMin='2010-01-01T07:35:12.084923Z',
+                                      timeMax='2050-01-01T07:35:12.084923Z', singleEvents=True,
                                       orderBy='startTime').execute()
     return events_result.get('items', [])
 
@@ -101,12 +104,13 @@ def check_email_validity(email, attendee_number):
     # Define a function for
     # for validating an Email
 
-	# pass the regular expression
-	# and the string into the fullmatch() method
-    if(re.fullmatch(regex, email)):
+    # pass the regular expression
+    # and the string into the fullmatch() method
+    if (re.fullmatch(regex, email)):
         pass
     else:
-        raise ValueError("Attendee {number}'s email is invalid".format(number = attendee_number + 1))
+        raise ValueError("Attendee {number}'s email is invalid".format(number=attendee_number + 1))
+
 
 def check_event_input(summary, location, creator, organizer, attendees, start_date, end_date):
     valid = True
@@ -127,25 +131,27 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
     except IndexError:
         check_location_is_physical = False
     else:
-        if (len(location_in_list_form[-1]) < 4) or (len(location_in_list_form[-1]) > 5):  #  4 <= len(postal_code) <= 5
+        if (len(location_in_list_form[-1]) < 4) or (len(location_in_list_form[-1]) > 5):  # 4 <= len(postal_code) <= 5
             check_location_is_physical = False
-        if (len(location_in_list_form[-2]) < 2) or (len(location_in_list_form[-2]) > 3):  #  2 <= len(state_abbreviation) <= 3
+        if (len(location_in_list_form[-2]) < 2) or (
+                len(location_in_list_form[-2]) > 3):  # 2 <= len(state_abbreviation) <= 3
             check_location_is_physical = False
     # Final check to see if location is valid
     if (check_location_is_online == False) and (check_location_is_physical == False):
-        raise ValueError('Physical Event location must follow Australian or American format; Online Events must have a join link')
+        raise ValueError(
+            'Physical Event location must follow Australian or American format; Online Events must have a join link')
 
     # Check for Event Attendees
     if len(attendees) == 0:
         raise ValueError('Event must have at least one attendee')
     for i in range(len(attendees)):
-        check_email_validity(attendees[i]['email'], i)    
+        check_email_validity(attendees[i]['email'], i)
 
-    # Checking for Event time
+        # Checking for Event time
     if start_date == "" or start_date == None:
         raise ValueError('Event must have a start date')
     # Add check for time format
-    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     try:
         # Checking for yyyy-mm-dd format
         datetime.datetime.strptime(start_date, '%Y-%M-%d')
@@ -162,23 +168,24 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
             # Identifying which month was inputted based on the MONTHS list above
             for i in range(len(MONTHS)):
                 if date_as_list[1] == MONTHS[i]:
-                    month = i+1
+                    month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
             if month == 0:
-                raise ValueError("Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+                raise ValueError(
+                    "Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
             else:
-                start_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+                start_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0], MONTH=month, year=date_as_list[2])
             # Test if date is of acceptable format using datetime package
             try:
                 datetime.datetime.strptime(start_date, '%d-%M-%y')
             except ValueError:
-                raise ValueError("Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
-
+                raise ValueError(
+                    "Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
 
     if end_date == "" or end_date == None:
         raise ValueError('Event must have an end date')
     # Add check for time format
-    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     try:
         # Checking for yyyy-mm-dd format
         datetime.datetime.strptime(end_date, '%Y-%M-%d')
@@ -195,21 +202,48 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
             # Identifying which month was inputted based on the MONTHS list above
             for i in range(len(MONTHS)):
                 if date_as_list[1] == MONTHS[i]:
-                    month = i+1
+                    month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
             if month == 0:
                 raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
             else:
-                end_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+                end_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0], MONTH=month, year=date_as_list[2])
             # Test if date is of acceptable format using datetime package
             try:
                 datetime.datetime.strptime(end_date, '%d-%M-%y')
             except ValueError:
                 raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+            
 
+<<<<<<< HEAD
+def start_new_event(api):
+    organiser_status = None
+    while organiser_status == None:
+        organiser_confirmation = input("Are you the organiser? Y/N : ")
+        if organiser_confirmation.upper() == 'Y':
+            organiser_status = True
+        elif organiser_confirmation.upper() == 'N':
+            organiser_status = False
 
+    summary = input("Insert Event Name : ")
 
+    location = input("Insert location of event : ")
+
+    list_of_attendees = []
+    number_of_attendees = input("Please enter the number of attendees : ")
+    for i in range(int(number_of_attendees)):
+        email = input("Input attendee " + str(i + 1) + "'s email : ")
+        attendee = {'email': '{email_to_insert}'.format(email_to_insert=email)}
+        list_of_attendees.append(attendee)
+
+    start_date = input("Insert a start date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
+    start = '{date}T09:00:00-07:00'.format(date=start_date)
+
+    end_date = input("Insert a end date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
+    end = '{date}T17:00:00-07:00'.format(date=end_date)
+=======
 def start_new_event(api, summary, location, list_of_attendees, start_date, end_date):
+>>>>>>> dc6eb9ead20765f67901b880467244b3f10cfadb
 
     check_event_input(summary, location, list_of_attendees, start_date, end_date)
 
@@ -257,6 +291,10 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
 
     return event
 
+
+
+
+
 def delete_existing_event(api, event_id, event_date, current_date):
     # Check if < current date ; if not then abort
     if event_date >= current_date:
@@ -266,11 +304,68 @@ def delete_existing_event(api, event_id, event_date, current_date):
     api.events().delete(calendarId='primary', eventId=event_id).execute()
 
 
+def addAttendee(api, eventId, newAttendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+
+        eventLaterThan2050 = isEventLaterThan2050(event)
+        if eventLaterThan2050:
+            raise Exception("Can't edit event that is later than 2050")
+
+        attendees = event['attendees']
+        initialAttendeeAmount = len(attendees)
+
+        if initialAttendeeAmount == 20:
+            raise Exception("Event has reached a maximum of 20 attendees")
+
+        attendees.append({"email": newAttendeeEmail})
+        updatedEvent = api.events().patch(calendarId='primary', eventId=eventId, body={"attendees": attendees},
+                                          sendUpdates="all").execute()
+
+        if (len(updatedEvent['attendees']) == initialAttendeeAmount):
+            print(f'{newAttendeeEmail} is already an attendee in this event')
+        else:
+            print(f'{newAttendeeEmail} was added to event {eventId} on {updatedEvent["updated"]}.')
+
+        return updatedEvent['attendees']
+    except Exception as e:
+        print(e)
+        print(f'{newAttendeeEmail} was not added successfully to event {eventId} as attendee.')
+        return False
+
+def removeAttendee(api, eventId,attendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary',eventId=eventId).execute()
+
+        eventLaterThan2050= isEventLaterThan2050(event)
+        if eventLaterThan2050: 
+            raise Exception("Can't edit event that is later than 2050")
+
+        attendees = event['attendees']
+        initialAttendeeAmount = len(attendees)
+        attendees = list(filter(lambda attendee: attendee['email'] != attendeeEmail, attendees)) # get attendees that are not attendeeEmail
+        updatedEvent = api.events().patch(calendarId='primary',eventId=eventId,body={"attendees":attendees},sendUpdates="all").execute() # update event with new attendee list
+
+        if len(attendees) == (initialAttendeeAmount-1):
+            print(f'{attendeeEmail} was removed from event {eventId} on {updatedEvent["updated"]}.')
+        else:
+            print(f'{attendeeEmail} is not an attendee in this event.')
+        return updatedEvent['attendees']
+    except Exception as e:
+        print(e)
+        print(f'{attendeeEmail} was not removed successfully from event {eventId} as attendee')
+        return False
+    
+def isEventLaterThan2050(event):
+    # Directly obtain first 4 characters of date to get year
+    startYear, endYear = int(event['start']['dateTime'][:4]), int(event['end']['dateTime'][:4])
+    if startYear > 2050 or endYear > 2050:
+        return True
+    return False
 
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-
 
     # events = get_upcoming_events(api, time_now, 10)
     events = get_all_events(api)
@@ -280,15 +375,11 @@ def main():
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
-    
-    # temp = start_new_event(api)
-    # print(temp)
-    
 
-
-    
-    
+    temp = start_new_event(api)
+    print(temp)
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
     main()
+    
