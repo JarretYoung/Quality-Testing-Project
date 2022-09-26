@@ -637,6 +637,955 @@ class MyEventManagerTest(unittest.TestCase):
     ===|Event Restore Section End|======================================================================================
     """
 
+    """
+    The following section is the test cases for the event deletion feature
+    ===|Event Navigation Query Section Start|======================================================================================
+    """
+    def test_query_no_event_matching_query(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","1","No Event with This name","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        self.assertEqual(0, len(running_application.query_events_list))    # Assert that there is now 0 item in the list of queried events
+    
+    
+    def test_query_valid_full_name_event(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","1","FIT2107 Assignment Test Invalid","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        # Check (and sort of compare) if there is a new item in the list right now
+        self.assertEqual(1, len(running_application.query_events_list))    # Assert that there is now 1 item in the list of queried events
+        
+        # Now check the infomation of queried item(s)
+        self.assertEqual(running_application.query_events_list[0].summary, "FIT2107 Assignment Test Invalid")
+        self.assertEqual(running_application.query_events_list[0].location, "https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09")
+        self.assertEqual(running_application.query_events_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[0].start['dateTime'], "2022-09-29T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[0].end['dateTime'], "2022-09-30T17:00:00-07:00")
+        # Add more tests if needed
+        
+    def test_query_invalid_full_name_event_no_input(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","1","","e"]
+        with self.assertRaises(ValueError):
+            # Simulating user input
+            with automatedInputOutput(user_input) as (inGen, outGen):
+                mock_api = MagicMock()
+                mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+                time_now = '2022-09-20T03:29:17.380207Z'
+                running_application = Application(mock_api, time_now)
+                running_application.on_start()
+
+    def test_query_valid_keyword_event(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","2","Invalid","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        # Check (and sort of compare) if there is a new item in the list right now
+        self.assertEqual(1, len(running_application.query_events_list))    # Assert that there is now 1 item in the list of queried events
+        
+        # Now check the infomation of queried item(s)
+        self.assertEqual(running_application.query_events_list[0].summary, "FIT2107 Assignment Test Invalid")
+        self.assertEqual(running_application.query_events_list[0].location, "https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09")
+        self.assertEqual(running_application.query_events_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[0].start['dateTime'], "2022-09-29T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[0].end['dateTime'], "2022-09-30T17:00:00-07:00")
+        # Add more tests if needed
+
+    def test_query_invalid_keyword_event_no_input(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","2","","e"]
+        with self.assertRaises(ValueError):
+            # Simulating user input
+            with automatedInputOutput(user_input) as (inGen, outGen):
+                mock_api = MagicMock()
+                mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+                time_now = '2022-09-20T03:29:17.380207Z'
+                running_application = Application(mock_api, time_now)
+                running_application.on_start()
+
+    def test_query_valid_start_year_event(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","3","2022","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        # Check (and sort of compare) if there is a new item in the list right now
+        self.assertEqual(2, len(running_application.query_events_list))    # Assert that there is now 1 item in the list of queried events
+        
+        # Now check the infomation of queried item(s)
+        self.assertEqual(running_application.query_events_list[0].summary, "FIT2107 Assignment Test Valid")
+        self.assertEqual(running_application.query_events_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.query_events_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[0].start['dateTime'], "2022-09-14T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[0].end['dateTime'], "2022-09-15T17:00:00-07:00")
+
+        self.assertEqual(running_application.query_events_list[1].summary, "FIT2107 Assignment Test Invalid")
+        self.assertEqual(running_application.query_events_list[1].location, "https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09")
+        self.assertEqual(running_application.query_events_list[1].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[1].start['dateTime'], "2022-09-29T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[1].end['dateTime'], "2022-09-30T17:00:00-07:00")
+        # Add more tests if needed
+
+    def test_query_valid_start_date_event(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","4","2022-09-14","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        # Check (and sort of compare) if there is a new item in the list right now
+        self.assertEqual(1, len(running_application.query_events_list))    # Assert that there is now 1 item in the list of queried events
+        
+        # Now check the infomation of queried item(s)
+        self.assertEqual(running_application.query_events_list[0].summary, "FIT2107 Assignment Test Valid")
+        self.assertEqual(running_application.query_events_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.query_events_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[0].start['dateTime'], "2022-09-14T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[0].end['dateTime'], "2022-09-15T17:00:00-07:00")
+        # Add more tests if needed
+
+    def test_query_invalid_start_date_event_by_inputting_dd_mm_yyyy_format(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","4","29-09-2022","e"]
+        # Simulating user input
+        # Invalid input should have prompted an ValueError to be raised 
+        with self.assertRaises(ValueError):
+            with automatedInputOutput(user_input) as (inGen, outGen):
+                mock_api = MagicMock()
+                mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+                time_now = '2022-09-20T03:29:17.380207Z'
+                running_application = Application(mock_api, time_now)
+                running_application.on_start()
+        
+    
+    def test_query_valid_end_year_event(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","5","2022","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        # Check (and sort of compare) if there is a new item in the list right now
+        self.assertEqual(2, len(running_application.query_events_list))    # Assert that there is now 1 item in the list of queried events
+        
+        # Now check the infomation of queried item(s)
+        self.assertEqual(running_application.query_events_list[0].summary, "FIT2107 Assignment Test Valid")
+        self.assertEqual(running_application.query_events_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.query_events_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[0].start['dateTime'], "2022-09-14T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[0].end['dateTime'], "2022-09-15T17:00:00-07:00")
+
+        self.assertEqual(running_application.query_events_list[1].summary, "FIT2107 Assignment Test Invalid")
+        self.assertEqual(running_application.query_events_list[1].location, "https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09")
+        self.assertEqual(running_application.query_events_list[1].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[1].start['dateTime'], "2022-09-29T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[1].end['dateTime'], "2022-09-30T17:00:00-07:00")
+        # Add more tests if needed
+
+    def test_query_valid_end_date_event(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","6","2022-09-15","e"]
+        # Simulating user input
+        with automatedInputOutput(user_input) as (inGen, outGen):
+            mock_api = MagicMock()
+            mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+            time_now = '2022-09-20T03:29:17.380207Z'
+            running_application = Application(mock_api, time_now)
+            running_application.on_start()
+        
+        # At this point, user input has been inputted and a new event has been added
+        # Check (and sort of compare) if there is a new item in the list right now
+        self.assertEqual(1, len(running_application.query_events_list))    # Assert that there is now 1 item in the list of queried events
+        
+        # Now check the infomation of queried item(s)
+        self.assertEqual(running_application.query_events_list[0].summary, "FIT2107 Assignment Test Valid")
+        self.assertEqual(running_application.query_events_list[0].location, "123 Fake St. Clayton VIC 3400")
+        self.assertEqual(running_application.query_events_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
+        self.assertEqual(running_application.query_events_list[0].start['dateTime'], "2022-09-14T09:00:00-07:00")
+        self.assertEqual(running_application.query_events_list[0].end['dateTime'], "2022-09-15T17:00:00-07:00")
+        # Add more tests if needed
+
+    def test_query_invalid_end_date_event_by_inputting_dd_mm_yyyy_format(self):
+        test_event_1 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'7k6giqb8k7ck6po83pbof50sij',
+            'summary':'FIT2107 Assignment Test Valid',
+            'description':'This is a test',
+            'location':'123 Fake St. Clayton VIC 3400',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-14T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-15T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+
+        test_event_2 = {
+            'kind':'calendar#event',
+            'etag':'"3327475922566000"',
+            'id':'8k6giqb8k2ck6po83pbof50sip',
+            'summary':'FIT2107 Assignment Test Invalid',
+            'description':'This is a test',
+            'location':'https://monash.zoom.us/j/5863187297?pwd=RDNBZzNmZDlySy9KYk5KbzNLU3hnQT09',
+            'creator':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'organizer':{
+                'email':'gyon0004@student.monash.edu',
+                'self':True
+            },
+            'start':{
+                'dateTime':'2022-09-29T09:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'end':{
+                'dateTime':'2022-09-30T17:00:00-07:00',
+                'timeZone':'Asia/Singapore'
+            },
+            'attendees':[
+                {
+                    'email':'gyon0004@student.monash.edu',
+                    'organizer':True,
+                    'self':True,
+                    'responseStatus':'accepted'
+                }
+            ]
+        }
+        
+        # Dictating user input 
+        user_input = ["7","6","29-09-2022","e"]
+        # Simulating user input
+        # Invalid input should have prompted an ValueError to be raised 
+        with self.assertRaises(ValueError):
+            with automatedInputOutput(user_input) as (inGen, outGen):
+                mock_api = MagicMock()
+                mock_api.events.return_value.list.return_value.execute.return_value = {'items' : [test_event_1, test_event_2]}
+                time_now = '2022-09-20T03:29:17.380207Z'
+                running_application = Application(mock_api, time_now)
+                running_application.on_start()
+
+    """
+    ===|Event Navigation Query Section End|======================================================================================
+    """
 
 class AddAttendeeTest(unittest.TestCase):
     def setUp(self):
@@ -893,7 +1842,7 @@ class ExportEventTest(unittest.TestCase):
 
 def main():
     # Create the test suite from the cases above.
-    suite = unittest.TestLoader().loadTestsFromTestCase(ExportEventTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(MyEventManagerTest)
     # This will run the test suite.
     unittest.TextTestRunner(verbosity=2).run(suite)
 
