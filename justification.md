@@ -52,3 +52,20 @@ Moving on to ImportEventTest, in this test suite the importEventFromJSON() funct
 Lastly, the ExportEventTest. The exportEventToJson() function in MyEventManager.py, which enables users to export an event from Google Calendar to a JSON file, will be tested as part of this test suite. This function is similar to the import function where it takes in the Google Calendar API object, eventId and of course the destination path where the event specified by the eventId is exported to. Similarly, Branch coverage was used to guarantee that each branch has been tested. Since each decision node in our example only has one condition, condition coverage would also be applicable because every condition would either be true or false at least once. In this instance, the branches serve as the exception handler for FileNotFoundError (which occurs when a user enters a file path that is incorrect) and also check to see if the user has entered a file path or not; if not, the event is exported to the current directory. Mocking is also used to mock the API object, where the mocked object uses the given eventId to get the event.
 
 (]==============================================================[)
+
+(]==============================================================[)
+Student Name :          Choo Bi Shan
+Student ID :            33053758
+Sections Worked on :    Event Organiser & Reminder or Notification
+          ==============================================
+
+Category partitioning strategy was used in testing the development of the access of the organizer by deleting, adding, or updating the attendees of the event. A must rule is applied to updating the attendees in the event. One valid class, which is the user updating the attendees is the event organizer, and one invalid class which the person who modifies the attendees in the event is not the organizer of the class.  
+ 
+Besides that, MC/DC testing was used in the access of the organizer of creating an event, updating the details of the event such as updating the event dates and changing the event’s name. A must rule is applying here which the updated event date should be at the present date and no later than the year 2050. To ensure the coverage of the test case, the ID of the event organizer and the details of the updating info were both taking valid and invalid input. Furthermore, the limitation of updating the start and end date of the events makes these test cases fall under the Equivalence Partitioning range’s rule. A set of start and end dates with valid and invalid values was taken in as input to test whether the program meets the input condition specified.
+ 
+Based on the specification given, an organizer can create events on behalf of others and change the event owner by assigning the event to another person. Equivalence partitioning of the must rule was applied here. To ensure that only organizer has the access to assigning a new organizer, valid input and invalid input were passed into each test case.  An expected output of failing to change the organizer of the event and organizing events for others when an invalid user is passed into the test case means it passes the test case.
+ 
+In the next development, which is reminders or notifications, a must rule was also applied in this case. If an invalid email address (non-google account) will trigger an error. A google account was taken in as a valid account and an-non google account was taken in as an invalid account and will fail to set the reminders. 
+
+
+(]==============================================================[)
