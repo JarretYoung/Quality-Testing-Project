@@ -32,9 +32,11 @@ class Application():
             elif input_val == '5':
                 pass #placeholder for updating an event 
             elif input_val == '6':
-                self.restore_event(self.api)  
+                self.restore_event(self.api) 
             elif input_val == '7':
-                self.query_events_list = self.query_events()
+                self.import_event() 
+            elif input_val == '8':
+                self.query_events_list = self.query_events()   
             elif (input_val == 'e') or (input_val == 'E'):
                 print('Thank you for using our application!')
                 break
@@ -48,7 +50,8 @@ class Application():
         print("4) Cancel Event")
         print("5) Edit Event")
         print("6) Restore Event")
-        print("7) Query Events")
+        print("7) Import Event")
+        print("8) Query Events")
         print("e) Exit Application")
         input_val = -1
         valid_input = ['1','2','3','4','5','6', '7','e','E']
@@ -323,4 +326,14 @@ class Application():
             for i in range(len(queried_events)):
                 print('[{index}] {event_time} | {event_name}'.format(index=i+1, event_time=queried_events[i].start['dateTime'], event_name=queried_events[i].summary))
         return queried_events
+    
+    def import_event(self):
+        file = input("File path to event JSON file (use / as delimiter): ")
+        result = importEventFromJSON(self.api,file)
+        
+        if result != True:
+            print(result)
+        else:
+            self.event_list.append(result)
+
 
