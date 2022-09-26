@@ -61,21 +61,19 @@ def get_calendar_api():
     return build('calendar', 'v3', credentials=creds)
 
 
-def get_upcoming_events(api, starting_time):
+def get_upcoming_events(api, starting_time, number_of_events):
     """
     Shows basic usage of the Google Calendar API.
     Prints the start and name of the next n events on the user's calendar.
     """
-    # if (number_of_events <= 0):
-    #     raise ValueError("Number of events must be at least 1.")
+    if (number_of_events <= 0):
+        raise ValueError("Number of events must be at least 1.")
 
-    events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
-                                      singleEvents=True,
+    events_result = api.events().list(calendarId='primary', timeMin=starting_time,
+                                      maxResults=number_of_events, singleEvents=True,
                                       orderBy='startTime').execute()
-    # events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
-    #                                   maxResults=number_of_events, singleEvents=True,
-    #                                   orderBy='startTime').execute()
     return events_result.get('items', [])
+
 
 def get_all_events(api):
     """
@@ -108,7 +106,7 @@ def check_email_validity(email, attendee_number):
     else:
         raise ValueError("Attendee {number}'s email is invalid".format(number = attendee_number + 1))
 
-def check_event_input(summary, location, creator, organizer, attendees, start_date, end_date):
+def check_event_input(summary, location, attendees, start_date, end_date):
     valid = True
     # Checking for Event name
     if summary == "" or summary == None:
@@ -252,8 +250,10 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
 
     if event_output['id'] != None:
         event.add_id(event_output['id'])
-        event.add_creator(event_output['creator'])
-        event.add_organiser(event_output['organizer'])
+        event.add_creator(event_output['creator']['email'])
+        event.add_organiser(event_output['organizer']['email'])
+        event.add_start(event_output['start'])
+        event.add_end(event_output['end'])
 
     return event
 
