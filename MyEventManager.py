@@ -252,7 +252,7 @@ def start_new_event(api):
         event.add_creator(event_output['creator'])
         event.add_organiser(event_output['organizer'])
 
-    return event_output
+    return event
 
 
 
@@ -344,7 +344,5 @@ def main():
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
-    api = get_calendar_api()
-    n = start_new_event(api)
-    print(n)
+    main()
     
