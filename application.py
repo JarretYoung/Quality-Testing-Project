@@ -1,10 +1,7 @@
 from MyEventManager import *
 from classes import *
-<<<<<<< Updated upstream
-=======
 from datetime import *
 import datetime
->>>>>>> Stashed changes
 
 
 class Application():
@@ -13,41 +10,7 @@ class Application():
         self.event_list = []
         self.archived_event_list = []
         self.date_time_now = date_time
-<<<<<<< Updated upstream
-
-    def on_start(self):
-        self.event_list = self.get_event_list(self.api)
-        print('+-------------------------+')
-        print('|       Welcome to        |')
-        print('|     MyEventManager      |')
-        print('|       Application       |')
-        print('+-------------------------+')
-        while True:
-            input_val = self.display_menu()
-            if input_val == '1':
-                for i in range(len(self.event_list)):
-                    print('[{index}] {event_time} | {event_name}'.format(index=i + 1,
-                                                                         event_time=self.event_list[i].start[
-                                                                             'dateTime'],
-                                                                         event_name=self.event_list[i].summary))
-            elif input_val == '2':
-                self.add_event(self.api)
-            elif input_val == '3':
-                self.delete_event(self.api)
-            elif input_val == '4':
-                self.cancel_event(self.api)
-            elif input_val == '5':
-                self.edit_event(self.api)
-            elif input_val == '6':
-                self.restore_event(self.api)
-            elif input_val == '7':
-                self.create_an_event_on_behalf_of_others(self.api)
-            elif (input_val == 'e') or (input_val == 'E'):
-                print('Thank you for using our application!')
-                break
-=======
         self.query_events_list = []
->>>>>>> Stashed changes
 
     def on_start(self):
         self.event_list = self.get_event_list(self.api)
@@ -71,25 +34,17 @@ class Application():
             elif input_val == '4':
                 self.cancel_event(self.api, self.date_time_now)
             elif input_val == '5':
-<<<<<<< Updated upstream
                 self.edit_event(self.api)
             elif input_val == '6':
                 self.restore_event(self.api)
             elif input_val == '7':
                 self.query_events_list = self.query_events()
             elif input_val == '8':
-                self.create_an_event_on_behalf_of_others(self.api)
-            elif input_val == '9':
-                self.get_reminder(self.api)
-=======
-                pass  # placeholder for updating an event
-            elif input_val == '6':
-                self.restore_event(self.api)
-            elif input_val == '7':
                 self.import_event()
-            elif input_val == '8':
-                self.query_events_list = self.query_events()
->>>>>>> Stashed changes
+            elif input_val == '9':
+                self.create_an_event_on_behalf_of_others(self.api)
+            elif input_val == '10':
+                self.get_reminder(self.api)
             elif (input_val == 'e') or (input_val == 'E'):
                 print('Thank you for using our application!')
                 break
@@ -103,20 +58,13 @@ class Application():
         print("4) Cancel Event")
         print("5) Edit Event")
         print("6) Restore Event")
-<<<<<<< Updated upstream
-        print("7) Query Events")
-        print("8) Create an event on behalf of others")
-        print("9) Get reminder")
+        print("7) Query Event")
+        print("8) Import Events")
+        print("9) creator event for other")
+        print("10) Set reminder")
         print("e) Exit Application")
         input_val = -1
-        valid_input = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'e', 'E']
-=======
-        print("7) Import Event")
-        print("8) Query Events")
-        print("e) Exit Application")
-        input_val = -1
-        valid_input = ['1', '2', '3', '4', '5', '6', '7', 'e', 'E']
->>>>>>> Stashed changes
+        valid_input = ['1', '2', '3', '4', '5', '6', '7', '8','9','10','e', 'E']
         while input_val not in valid_input:
             input_val = input("Input your desired action based on the index (input E to exit): \n")
         return input_val
@@ -135,10 +83,7 @@ class Application():
                     Event(event['id'], event['summary'], None, event['creator'], event['organizer'], event['attendees'],
                           event['start'], event['end']))
             else:
-<<<<<<< Updated upstream
-=======
                 # There are actually cases where some existing events have no attendees, this is to eliminate errors when obtaining information from the API
->>>>>>> Stashed changes
                 try:
                     event['attendees']
                 except KeyError:
@@ -150,10 +95,6 @@ class Application():
                     output_list.append(
                         Event(event['id'], event['summary'], event['location'], event['creator'], event['organizer'],
                               event['attendees'], event['start'], event['end']))
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
         return output_list
 
     def add_event(self, api):
@@ -187,12 +128,7 @@ class Application():
 
         # Check if input is right format; if so then add it to API; else throw error
         new_event = start_new_event(api, summary, location, list_of_attendees, start_date, end_date)
-<<<<<<< Updated upstream
-        print(new_event.summary)
-        print(new_event.id)
-=======
 
->>>>>>> Stashed changes
         # If no error is raised in above section, add the event to the list
         self.event_list.append(new_event)
 
@@ -228,61 +164,6 @@ class Application():
         # Delete the event from the online calendar
         delete_existing_event(api, event_to_delete_id, event_to_delete_time, time_now)
 
-<<<<<<< Updated upstream
-    def edit_event(self, api,):
-        print('[]========================Edit Event========================[]')
-        print("What do you want to edit?")
-        print("1) Change event name")
-        print("2) Change event date")
-        print("3) Change event location")
-        print("4) Change event ownner")
-        print("5) Update attendees")
-
-        user_choice = input('Please enter your choice. You can choose more than one option.')
-        options_that_can_be_edit = []
-
-        # Getting all the events that should be allowed to be edit
-        l = len(self.event_list)
-        for i in range(l):
-            # if self.event_list[i].end['dateTime'] > self.date_time_now:
-                options_that_can_be_edit.append(i)
-
-        # Display options
-        for i in range(len(options_that_can_be_edit)):
-            print('[{index}] {event_time} | {event_name}'.format(index=i + 1, event_time=self.event_list[options_that_can_be_edit[i]].start['dateTime'], event_name=self.event_list[options_that_can_be_edit[i]].summary))
-
-        input_val_edit = input("Select event to edit by inputting it's index (input E to exit): \n")
-        if input_val_edit == 'e' or input_val_edit == 'E':
-            return
-
-        # Remove the event from the application's list of events
-        event_to_edit = self.event_list[int(options_that_can_be_edit[(int(input_val_edit) - 1)])]
-
-        # Obtain event info
-        event_to_edit_id = event_to_edit.id
-
-        # edit the event from the online calendar
-        # delete_existing_event(api, event_to_edit_id)
-
-        # check if is event organiser
-        user_id = input('Please enter you email: ')
-        eor = event_to_edit.organiser['email']
-        if user_id != eor:
-            print('Only organiser can edit event!')
-            return
-            # raise ValueError('Only organiser can edit event!')
-
-
-        len_user_choice = len(user_choice)
-        if len_user_choice > 1:
-            user_choice.split(user_choice)
-            for i in user_choice:
-                upp = update_event(api,i,event_to_edit_id)
-        else:
-            upp = update_event(api, user_choice, event_to_edit_id)
-
-        return upp
-=======
         # ==================================================================================================
 
         # options_not_to_delete = get_upcoming_events(api, time_now)
@@ -311,7 +192,6 @@ class Application():
         # # Delete the event from the online calendar
         # delete_existing_event(api, event_to_delete_id, event_to_delete_time, time_now)
 
->>>>>>> Stashed changes
     def cancel_event(self, api, time_now):
         print('[]========================Cancel Event========================[]')
         options_that_can_be_deleted = []
@@ -330,11 +210,7 @@ class Application():
         input_val = -1
         valid_input = list(range(1, (len(options_that_can_be_deleted) + 1)))
         while int(input_val) not in valid_input:
-<<<<<<< Updated upstream
-            input_val = int(input("Select event to cancel by inputting it's index (input E to exit): \n"))
-=======
             input_val = input("Select event to cancel by inputting it's index (input E to exit): \n")
->>>>>>> Stashed changes
             if input_val == 'e' or input_val == 'E':
                 return
 
@@ -352,22 +228,15 @@ class Application():
         delete_existing_event(api, event_to_cancel_id, event_to_cancel_time, time_now)
 
     def restore_event(self, api):
-<<<<<<< Updated upstream
-=======
         print('[]=======================Restore Event=========================[]')
->>>>>>> Stashed changes
         if len(self.archived_event_list) == 0:
             print('There are no events in backup/archive')
             return
 
         for i in range(len(self.archived_event_list)):
             print('[{index}] {event_time} | {event_name}'.format(index=i + 1,
-<<<<<<< Updated upstream
-                                                                 event_time=self.archived_event_list[i].start,
-=======
                                                                  event_time=self.archived_event_list[i].start[
                                                                      'dateTime'],
->>>>>>> Stashed changes
                                                                  event_name=self.archived_event_list[i].summary))
 
         input_val = -1
@@ -382,23 +251,12 @@ class Application():
 
         # Create a new event
         restored_event = start_new_event(api, event_to_restore.summary, event_to_restore.location,
-<<<<<<< Updated upstream
-                                         event_to_restore.attendees, event_to_restore.start[:10],
-                                         event_to_restore.end[:10])
-=======
                                          event_to_restore.attendees, event_to_restore.start['dateTime'][:10],
                                          event_to_restore.end['dateTime'][:10])
->>>>>>> Stashed changes
 
         # Restore (technically add) the event to the list
         self.event_list.append(restored_event)
 
-<<<<<<< Updated upstream
-    def create_an_event_on_behalf_of_others(self,api):
-        print('[]===============create_an_event_on_behalf_of_others==================[]')
-        self.add_event(api)
-        event_added = self.event_list[len(self.event_list)-1]
-=======
     def query_events(self):
         print('[]========================Query Events========================[]')
         print('What would you like to query?')
@@ -536,7 +394,6 @@ class Application():
         if input_val_edit == 'e' or input_val_edit == 'E':
             return
 
-        # Remove the event from the application's list of events
         event_to_edit = self.event_list[int(options_that_can_be_edit[(int(input_val_edit) - 1)])]
 
         # Obtain event info
@@ -557,17 +414,16 @@ class Application():
         if len_user_choice > 1:
             user_choice.split(user_choice)
             for i in user_choice:
-                upp = update_event(api, i, event_to_edit_id)
+                upp = update_event(api, i, event_to_edit_id, event_to_edit)
         else:
-            upp = update_event(api, user_choice, event_to_edit_id)
-
+            upp = update_event(api, user_choice, event_to_edit_id, event_to_edit)
+        # event_to_edit.add_organiser(upp['organizer'])
         return upp
 
     def create_an_event_on_behalf_of_others(self, api):
         print('[]===============create_an_event_on_behalf_of_others==================[]')
         self.add_event(api)
         event_added = self.event_list[len(self.event_list) - 1]
->>>>>>> Stashed changes
         event_id = event_added.id
         change_event_owner(api, event_id)
 
@@ -593,38 +449,7 @@ class Application():
         event_id = event_edit.id
 
         # api.events().get(calendarId='primary', eventId=event_id).execute().reminder['useDefault'] = True
-<<<<<<< Updated upstream
-        event =api.events().get(calendarId='primary', eventId=event_id).execute()
-        event.reminders['useDefault'] = True
-        api.events().patch(calendarId='primary', eventId=event['id'], body=event).execute()
-
-if __name__== '__main__':
-    time_now = '2022-09-20T03:29:17.380207Z'
-    api = get_calendar_api()
-    app = Application(api, time_now)
-    app.on_start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
         event = api.events().get(calendarId='primary', eventId=event_id).execute()
         event.reminders['useDefault'] = True
         api.events().patch(calendarId='primary', eventId=event['id'], body=event).execute()
 
->>>>>>> Stashed changes

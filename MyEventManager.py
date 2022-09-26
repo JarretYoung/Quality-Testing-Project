@@ -7,22 +7,13 @@
 # When app is run for the first time, you will need to sign in using your Monash student account.
 # Allow the "View your calendars" permission request.
 # can send calendar event invitation to a student using the student.monash.edu email.
-# Make sure you are logged into your Monash student account.
-# Go to: https://developers.google.com/calendar/quickstart/python
-# Click on "Enable the Google Calendar API"
-# Configure your OAuth client - select "Desktop app", then proceed
-# Click on "Download Client Configuration" to obtain a credential.json file
-# Do not share your credential.json file with anybody else, and do not commit it to your A2 git repository.
-# When app is run for the first time, you will need to sign in using your Monash student account.
-# Allow the "View your calendars" permission request.
-# can send calendar event invitation to a student using the student.monash.edu email.
 # The app doesn't support sending events to non student or private emails such as outlook, gmail etc
 # students must have their own api key
 # no test cases for authentication, but authentication may required for running the app very first time.
 # http://googleapis.github.io/google-api-python-client/docs/dyn/calendar_v3.html
 
 
-# Code adapted from https://developers.google.gtcom/calendar/quickstart/python
+# Code adapted from https://developers.google.com/calendar/quickstart/python
 from __future__ import print_function
 from aifc import Error
 import datetime
@@ -37,11 +28,8 @@ from classes import *
 from datetime import *
 import datetime
 import re
-<<<<<<< Updated upstream
-=======
 import json
 from googleapiclient import errors
->>>>>>> Stashed changes
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -75,21 +63,17 @@ def get_calendar_api():
     return build('calendar', 'v3', credentials=creds)
 
 
-def get_upcoming_events(api, starting_time):
+def get_upcoming_events(api, starting_time, number_of_events):
     """
     Shows basic usage of the Google Calendar API.
     Prints the start and name of the next n events on the user's calendar.
     """
-    # if (number_of_events <= 0):
-    #     raise ValueError("Number of events must be at least 1.")
+    if (number_of_events <= 0):
+        raise ValueError("Number of events must be at least 1.")
 
     events_result = api.events().list(calendarId='primary', timeMin=starting_time,
-                                      timeMax='2050-01-01T07:35:12.084923Z',
-                                      singleEvents=True,
+                                      maxResults=number_of_events, singleEvents=True,
                                       orderBy='startTime').execute()
-    # events_result = api.events().list(calendarId='primary', timeMin=starting_time, timeMax = '2050-01-01T07:35:12.084923Z',
-    #                                   maxResults=number_of_events, singleEvents=True,
-    #                                   orderBy='startTime').execute()
     return events_result.get('items', [])
 
 
@@ -180,11 +164,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
-<<<<<<< Updated upstream
-            for i in range(MONTHS):
-=======
             for i in range(len(MONTHS)):
->>>>>>> Stashed changes
                 if date_as_list[1] == MONTHS[i]:
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -218,11 +198,7 @@ def check_event_input(summary, location, attendees, start_date, end_date):
             # Assuming input is following dd-MON-yy
             month = 0
             # Identifying which month was inputted based on the MONTHS list above
-<<<<<<< Updated upstream
-            for i in range(MONTHS):
-=======
             for i in range(len(MONTHS)):
->>>>>>> Stashed changes
                 if date_as_list[1] == MONTHS[i]:
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
@@ -279,15 +255,10 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
 
     if event_output['id'] != None:
         event.add_id(event_output['id'])
-<<<<<<< Updated upstream
-        event.add_creator(event_output['creator'])
-        event.add_organiser(event_output['organizer'])
-=======
         event.add_creator(event_output['creator']['email'])
         event.add_organiser(event_output['organizer']['email'])
         event.add_start(event_output['start'])
         event.add_end(event_output['end'])
->>>>>>> Stashed changes
 
     return event
 
@@ -301,8 +272,6 @@ def delete_existing_event(api, event_id, event_date, current_date):
     api.events().delete(calendarId='primary', eventId=event_id).execute()
 
 
-<<<<<<< Updated upstream
-=======
 def addAttendee(api, eventId, newAttendeeEmail):
     try:
         event = api.events().get(calendarId='primary', eventId=eventId).execute()
@@ -422,7 +391,7 @@ def exportEventToJson(api, eventId, exportDestination=None):
         return False
 
 
-def update_event(api, i, event_id):
+def update_event(api, i, event_id, event):
     event = api.events().get(calendarId='primary', eventId=event_id).execute()
 
     if i == "1":
@@ -478,7 +447,8 @@ def update_event(api, i, event_id):
         event.location = list(new_location)
 
     elif i == '4':
-        change_event_owner(api, event_id)
+        returned_event = change_event_owner(api, event_id)
+
 
     elif i == "5":
         act = input('Please choose an option : add / delete')
@@ -489,13 +459,13 @@ def update_event(api, i, event_id):
 
     event = api.events().patch(calendarId='primary', eventId=event['id'], body=event).execute()
 
-    # return updated_event
+    return returned_event
 
 
 def change_event_owner(api, event_id):
     event = api.events().get(calendarId='primary', eventId=event_id).execute()
     new_destination = input("Please enter the gmail of the new organiser: ")
-    updated_event = api.events().move(calendarId=new_destination, eventId=event_id,
+    updated_event = api.events().move(calendarId='primary', eventId=event_id,
                                       destination=new_destination).execute()
     return updated_event
 
@@ -521,7 +491,6 @@ def modify_attendees(event, act):
             event.add_attendees(add_email)
 
 
->>>>>>> Stashed changes
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
@@ -539,137 +508,5 @@ def main():
     # print(temp)
 
 
-def update_event(api, i, event_id):
-    event = api.events().get(calendarId='primary', eventId=event_id).execute()
-
-    if i == "1":
-        event['summary'] = input("Please enter your new event name: ")
-
-    elif i == "2":
-        start_date = input("Please enter start date: ")
-        end_date = input("Please enter end date: ")
-        check_date_start = start_date.split('-')
-        today = date.today()
-        today = (str(today)).split("-")
-
-        # check if the date set to past
-        if len(check_date_start[0]) == 4:
-            if datetime.datetime(int(check_date_start[0]), int(check_date_start[1]),
-                                 int(check_date_start[2])) < datetime.datetime(int(today[0]), int(today[1]),
-                                                                               int(today[2])):
-                # raise ValueError('Cannot create an event in past')
-                print('Cannot create an event in past')
-                return
-        elif len(check_date_start[0]) == 2:
-            check_date_start[2] = int('20' + check_date_start[2])
-            if datetime.datetime(int(check_date_start[0]), int(check_date_start[1]),
-                                 int(check_date_start[2])) < datetime.datetime(int(today[2]), int(today[1]),
-                                                                               int(today[0])):
-                raise ValueError('Cannot create an event in past')
-
-        # check if the date set over 2050
-        if (len(check_date_start[0]) == 4 and int(check_date_start[0]) < 2050) or len(check_date_start[0]) == 2 and \
-                check_date_start[2] < 50:
-            start = '{date}T09:00:00-07:00'.format(date=start_date)
-        else:
-            # raise ValueError('No later than 2050')
-            print("'No later than 2050'")
-            return
-
-        check_date_end = end_date.split('-')
-        if (len(check_date_end[0]) == 4 and int(check_date_end[0]) < 2050) or len(check_date_end[0]) == 2 and \
-                int(check_date_end[2]) < 50:
-            end = '{date}T17:00:00-07:00'.format(date=end_date)
-        else:
-            # raise ValueError('No later than 2050')
-            print("'No later than 2050'")
-            return
-        event.start['dateTime'] = start
-        event.end['dateTime'] = end
-
-    elif i == "3":
-        new_location = input('Please input your new event location: ')
-        # lst_locattion = []
-        # lst.append(new_location)
-        # event['location'] = list(new_location)
-        event.location = list(new_location)
-
-    elif i == '4':
-        change_event_owner(api, event_id)
-
-    elif i == "5":
-        act = input('Please choose an option : add / delete')
-        if act == 'add' or act == 'delete':
-            modify_attendees(event, act)
-        else:
-            raise ValueError("Please choose a valid option")
-
-    event = api.events().patch(calendarId='primary', eventId=event['id'], body=event).execute()
-
-    # return updated_event
-
-
-def change_event_owner(api, event_id):
-
-    event = api.events().get(calendarId='primary', eventId=event_id).execute()
-    new_destination = input("Please enter the gmail of the new organiser: ")
-    updated_event = api.events().move(calendarId=new_destination, eventId=event_id,
-                                      destination=new_destination).execute()
-    return updated_event
-
-
-def modify_attendees(event, act):
-    num_attendees = int(input('Please enter the number of the attendees that you want to add/delete: '))
-    if num_attendees == 0:
-        raise ValueError('Should enter atleast 1 attendees')
-
-
-    if act == 'delete':
-        print('Please enter the email of attendes that you wanted to dlt')
-        count = 0
-        while count < num_attendees:
-            dlt_email = input("Attendee {number}'s email".format(number=count + 1))
-            if event.attendees[count]['email'] == dlt_email:
-                del (event.attendees[count]['email'])
-            else:
-                count += 1
-
-    elif act == 'add':
-        for i in range(num_attendees):
-            add_email = input("Attendee {number}'s email".format(number=i + 1))
-            event.add_attendees(add_email)
-
-
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
-<<<<<<< Updated upstream
-#
-    api = get_calendar_api()
-#     n = start_new_event(api)
-#     print(n)
-
-    # print(event)
-    # print(event['summary'], event['start']['dateTime'], event['end']['dateTime'])
-    #
-    # id = '2i7qq93nkg53jsg98porpvts7i'
-    # evet_update = update_event(id,'bcho0029@student.monash.edu', '2022-10-29', '2022-10-30', 'tea')
-    # print(evet_update)
-    # print(evet_update['summary'], evet_update['start']['dateTime'], evet_update['end']['dateTime'])
-    # ['98 Shirley Street PIMPAMA QLD 4209']
-
-    # # a =change_event_owner('2i7qq93nkg53jsg98porpvts7i')
-    # # print(a)
-    # # event['organiser'] = 'gyon0004@student.monash.edu'
-    # # event['end'] = {'dateTime': '2027-03-06T00:30:00+11:00', 'timeZone': 'Australia/Sydney'}
-    # updated_event = get_calendar_api().events().move(calendarId='primary', eventId='2i7qq93nkg53jsg98porpvts7i', destination = 'gyon0004@student.monash.edu').execute()
-
-    # First retrieve the event from the API.
-    # updated_event = get_calendar_api().events().move(calendarId='primary', eventId='eventId', destination='bishan0420@gmail.com').execute()
-    # print(updated_event)
-    # event = api.events().get(calendarId='primary', eventId="2i7qq93nkg53jsg98porpvts7i").execute()
-    # new_destination = 'bishan0420@gmail.com'
-    # updated_event = api.events().move(calendarId=new_destination, eventId="2i7qq93nkg53jsg98porpvts7i",
-    #                                   destination=new_destination).execute()
-    # print(updated_event)
-=======
     main()
->>>>>>> Stashed changes
