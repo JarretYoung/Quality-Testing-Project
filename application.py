@@ -319,3 +319,5 @@ class Application():
                 print('[{index}] {event_time} | {event_name}'.format(index=i+1, event_time=queried_events[i].start['dateTime'], event_name=queried_events[i].summary))
         return queried_events
 
+    def cancel_event(self, api):
+        pass
