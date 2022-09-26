@@ -388,6 +388,15 @@ class MyEventManagerTest(unittest.TestCase):
         self.assertEqual(running_application.event_list[0].end['dateTime'], "2022-09-30T17:00:00-07:00")
         # Add more tests if needed
 
+    def test_delete_invalid_tasks_via_direct_input_to_method(self):
+        # Background: You can only delete/ cancel events that have already passed 
+        with self.assertRaises(ValueError):
+            mock_api = MagicMock()
+            fake_event_id = '8k6giqb8k2ck6po83pbof50sip'
+            invalid_date_input = '2022-09-29T09:00:00-07:00'    # Invalid because this event has not passed (this_date > current_date)
+            fake_current_date = '2022-09-15T17:00:00-07:00'     
+            MyEventManager.delete_existing_event(mock_api, fake_event_id, invalid_date_input, fake_current_date)
+
     """
     ===|Event Delete Section End|======================================================================================
     """
@@ -494,7 +503,6 @@ class MyEventManagerTest(unittest.TestCase):
         self.assertEqual(running_application.archived_event_list[0].attendees[0]['email'], "gyon0004@student.monash.edu")
         self.assertEqual(running_application.archived_event_list[0].start['dateTime'], "2022-09-14T09:00:00-07:00")
         self.assertEqual(running_application.archived_event_list[0].end['dateTime'], "2022-09-15T17:00:00-07:00")
-
         
     """
     ===|Event Cancel Section End|======================================================================================
