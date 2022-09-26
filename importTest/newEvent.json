@@ -1,0 +1,18 @@
+{
+	"summary": "Monash Import",
+	"location": "Monash",
+	"start": {
+	  "dateTime": "2022-09-24T6:00:00",
+	  "timeZone": "Asia/Singapore"
+	},
+	"end": {
+	  "dateTime": "2022-09-25T10:25:00",
+	  "timeZone": "Asia/Singapore"
+	},
+	"attendees": [
+	  {
+		"email": "jetyip123@hotmail.com"
+	  }
+	]
+  }
+

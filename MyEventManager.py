@@ -28,6 +28,8 @@ from classes import *
 from datetime import *
 import datetime 
 import re
+import json
+from googleapiclient import errors
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -265,7 +267,123 @@ def delete_existing_event(api, event_id, event_date, current_date):
     # delete using api
     api.events().delete(calendarId='primary', eventId=event_id).execute()
 
+def addAttendee(api, eventId, newAttendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
 
+        eventLaterThan2050 = isEventLaterThan2050(event)
+        if eventLaterThan2050:
+            raise Exception("Can't edit event that is later than 2050")
+
+        attendees = event['attendees']
+        initialAttendeeAmount = len(attendees)
+
+        if initialAttendeeAmount == 20:
+            raise Exception("Event has reached a maximum of 20 attendees")
+
+        attendees.append({"email": newAttendeeEmail})
+        updatedEvent = api.events().patch(calendarId='primary', eventId=eventId, body={"attendees": attendees},
+                                          sendUpdates="all").execute()
+
+        if (len(updatedEvent['attendees']) == initialAttendeeAmount):
+            print(f'{newAttendeeEmail} is already an attendee in this event')
+        else:
+            print(
+                f'{newAttendeeEmail} was added to event {eventId} on {updatedEvent["updated"]}.')
+
+        return updatedEvent['attendees']
+    except Exception as e:
+        print(e)
+        print(
+            f'{newAttendeeEmail} was not added successfully to event {eventId} as attendee.')
+        return False
+
+
+def removeAttendee(api, eventId, attendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+
+        eventLaterThan2050 = isEventLaterThan2050(event)
+        if eventLaterThan2050:
+            raise Exception("Can't edit event that is later than 2050")
+
+        attendees = event['attendees']
+        initialAttendeeAmount = len(attendees)
+        # get attendees that are not attendeeEmail
+        attendees = list(
+            filter(lambda attendee: attendee['email'] != attendeeEmail, attendees))
+        updatedEvent = api.events().patch(calendarId='primary', eventId=eventId, body={
+            "attendees": attendees}, sendUpdates="all").execute()  # update event with new attendee list
+
+        if len(attendees) == (initialAttendeeAmount-1):
+            print(
+                f'{attendeeEmail} was removed from event {eventId} on {updatedEvent["updated"]}.')
+        else:
+            print(f'{attendeeEmail} is not an attendee in this event.')
+        return updatedEvent['attendees']
+    except Exception as e:
+        print(e)
+        print(
+            f'{attendeeEmail} was not removed successfully from event {eventId} as attendee')
+        return False
+
+
+def isEventLaterThan2050(event):
+    # Directly obtain first 4 characters of date to get year
+    startYear, endYear = int(event['start']['dateTime'][:4]), int(
+        event['end']['dateTime'][:4])
+    if startYear > 2050 or endYear > 2050:
+        return True
+    return False
+
+
+def importEventFromJSON(api, eventJSON):
+    '''
+    Loads a JSON file in valid format and adds as event
+    '''
+    try:
+        f = open(eventJSON)
+        event = json.load(f)
+        event = api.events().insert(calendarId='primary', body=event).execute()
+        print(f'Event created: %s' % (event.get("htmlLink")))
+        return True
+
+    except FileNotFoundError as e:
+        print(e)
+        return "File not found"
+
+    except json.JSONDecodeError as e:
+        print(e)
+        return "Incorrect JSON file format"
+
+    except Exception as e:
+        print(e)
+        return "Event was not created successfully"
+    
+def exportEventToJson(api,eventId,exportDestination=None):
+    '''
+    Exports an event into JSON file. 
+    '''    
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+        fileName = '_'.join(event['summary'].split()) + ".json"
+
+        if not exportDestination:
+            path = fileName
+        else:
+            exportDestination = exportDestination.split("/")
+            exportDestination.append(fileName)
+            path = os.path.join(*exportDestination)
+
+        with open(path,"w") as outfile:
+            json.dump(event,outfile,indent=4)
+        print(f"Event JSON file created at {path}")
+        return path
+    
+    except FileNotFoundError:
+        print("Directory not found")
+        return False
+        
 
 def main():
     api = get_calendar_api()
