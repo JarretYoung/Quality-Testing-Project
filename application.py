@@ -68,9 +68,14 @@ class Application():
                 # If the event under inspection has no location, then designate an Event object with no location registered
                 output_list.append( Event(event['id'], event['summary'], None, event['creator'], event['organizer'], event['attendees'], event['start'], event['end']) )
             else:
-                # If the event under inspection has a location then proceed as normal
-                output_list.append( Event(event['id'], event['summary'], event['location'], event['creator'], event['organizer'], event['attendees'], event['start'], event['end']) )
-            
+                # There are actually cases where some existing events have no attendees, this is to eliminate errors when obtaining information from the API
+                try: 
+                    event['attendees']
+                except KeyError:
+                    output_list.append( Event(event['id'], event['summary'], event['location'], event['creator'], event['organizer'], [], event['start'], event['end']) )
+                else:
+                    # If the event under inspection has a location then proceed as normal
+                    output_list.append( Event(event['id'], event['summary'], event['location'], event['creator'], event['organizer'], event['attendees'], event['start'], event['end']) )
         return output_list
     
     def add_event(self, api):
@@ -319,5 +324,3 @@ class Application():
                 print('[{index}] {event_time} | {event_name}'.format(index=i+1, event_time=queried_events[i].start['dateTime'], event_name=queried_events[i].summary))
         return queried_events
 
-    def cancel_event(self, api):
-        pass
