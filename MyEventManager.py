@@ -17,8 +17,11 @@
 from __future__ import print_function
 from aifc import Error
 import datetime
+from fileinput import filename
+from importlib.resources import path
 import pickle
 import os.path
+from traceback import print_tb
 from tracemalloc import start
 from xml.dom import ValidationErr
 from googleapiclient.discovery import build
@@ -28,6 +31,8 @@ from classes import *
 from datetime import *
 import datetime
 import re
+import json
+from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -109,7 +114,8 @@ def check_email_validity(email, attendee_number):
     if (re.fullmatch(regex, email)):
         pass
     else:
-        raise ValueError("Attendee {number}'s email is invalid".format(number=attendee_number + 1))
+        raise ValueError("Attendee {number}'s email is invalid".format(
+            number=attendee_number + 1))
 
 
 def check_event_input(summary, location, creator, organizer, attendees, start_date, end_date):
@@ -131,7 +137,8 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
     except IndexError:
         check_location_is_physical = False
     else:
-        if (len(location_in_list_form[-1]) < 4) or (len(location_in_list_form[-1]) > 5):  # 4 <= len(postal_code) <= 5
+        # 4 <= len(postal_code) <= 5
+        if (len(location_in_list_form[-1]) < 4) or (len(location_in_list_form[-1]) > 5):
             check_location_is_physical = False
         if (len(location_in_list_form[-2]) < 2) or (
                 len(location_in_list_form[-2]) > 3):  # 2 <= len(state_abbreviation) <= 3
@@ -151,7 +158,8 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
     if start_date == "" or start_date == None:
         raise ValueError('Event must have a start date')
     # Add check for time format
-    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+              'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     try:
         # Checking for yyyy-mm-dd format
         datetime.datetime.strptime(start_date, '%Y-%M-%d')
@@ -161,7 +169,8 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
             # Checking if overall formatting is correct ex: using '/' instead of '-' to separate the date
             temp = date_as_list[-2]
         except IndexError:
-            raise ValueError("Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+            raise ValueError(
+                "Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
         else:
             # Assuming input is following dd-MON-yy
             month = 0
@@ -174,7 +183,8 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
                 raise ValueError(
                     "Start Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
             else:
-                start_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0], MONTH=month, year=date_as_list[2])
+                start_date = '{day}-{MONTH}-{year}'.format(
+                    day=date_as_list[0], MONTH=month, year=date_as_list[2])
             # Test if date is of acceptable format using datetime package
             try:
                 datetime.datetime.strptime(start_date, '%d-%M-%y')
@@ -185,7 +195,8 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
     if end_date == "" or end_date == None:
         raise ValueError('Event must have an end date')
     # Add check for time format
-    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+              'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     try:
         # Checking for yyyy-mm-dd format
         datetime.datetime.strptime(end_date, '%Y-%M-%d')
@@ -195,7 +206,8 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
             # Checking if overall formatting is correct ex: using '/' instead of '-' to separate the date
             temp = date_as_list[-2]
         except IndexError:
-            raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+            raise ValueError(
+                "End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
         else:
             # Assuming input is following dd-MON-yy
             month = 0
@@ -205,49 +217,26 @@ def check_event_input(summary, location, creator, organizer, attendees, start_da
                     month = i + 1
             # If month was not identified, assume that input was of wrong format; else reconstruct date
             if month == 0:
-                raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
+                raise ValueError(
+                    "End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
             else:
-                end_date = '{day}-{MONTH}-{year}'.format(day=date_as_list[0], MONTH=month, year=date_as_list[2])
+                end_date = '{day}-{MONTH}-{year}'.format(
+                    day=date_as_list[0], MONTH=month, year=date_as_list[2])
             # Test if date is of acceptable format using datetime package
             try:
                 datetime.datetime.strptime(end_date, '%d-%M-%y')
             except ValueError:
-                raise ValueError("End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
-            
+                raise ValueError(
+                    "End Date must follow the yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format")
 
-<<<<<<< HEAD
-def start_new_event(api):
-    organiser_status = None
-    while organiser_status == None:
-        organiser_confirmation = input("Are you the organiser? Y/N : ")
-        if organiser_confirmation.upper() == 'Y':
-            organiser_status = True
-        elif organiser_confirmation.upper() == 'N':
-            organiser_status = False
 
-    summary = input("Insert Event Name : ")
-
-    location = input("Insert location of event : ")
-
-    list_of_attendees = []
-    number_of_attendees = input("Please enter the number of attendees : ")
-    for i in range(int(number_of_attendees)):
-        email = input("Input attendee " + str(i + 1) + "'s email : ")
-        attendee = {'email': '{email_to_insert}'.format(email_to_insert=email)}
-        list_of_attendees.append(attendee)
-
-    start_date = input("Insert a start date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
-    start = '{date}T09:00:00-07:00'.format(date=start_date)
-
-    end_date = input("Insert a end date (follow yyyy-mm-dd (2022-02-22) or the dd-MON-yy (12-AUG-22) format): ")
-    end = '{date}T17:00:00-07:00'.format(date=end_date)
-=======
 def start_new_event(api, summary, location, list_of_attendees, start_date, end_date):
->>>>>>> dc6eb9ead20765f67901b880467244b3f10cfadb
 
-    check_event_input(summary, location, list_of_attendees, start_date, end_date)
+    check_event_input(summary, location, list_of_attendees,
+                      start_date, end_date)
 
-    MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+    MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+              'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
     try:
         # Checking for yyyy-mm-dd format
         datetime.datetime.strptime(start_date, '%Y-%M-%d')
@@ -260,10 +249,11 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
             if date_as_list[1] == MONTHS[i]:
                 month = i+1
         # Reconstruct date
-        start_date = '20{year}-{MONTH}-{day}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+        start_date = '20{year}-{MONTH}-{day}'.format(
+            day=date_as_list[0], MONTH=month, year=date_as_list[2])
     finally:
         start = '{date}T09:00:00-07:00'.format(date=start_date)
-    
+
     try:
         # Checking for yyyy-mm-dd format
         datetime.datetime.strptime(end_date, '%Y-%M-%d')
@@ -276,13 +266,16 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
             if date_as_list[1] == MONTHS[i]:
                 month = i+1
         # Reconstruct date
-        end_date = '20{year}-{MONTH}-{day}'.format(day=date_as_list[0],MONTH=month,year=date_as_list[2])
+        end_date = '20{year}-{MONTH}-{day}'.format(
+            day=date_as_list[0], MONTH=month, year=date_as_list[2])
     finally:
         end = '{date}T17:00:00-07:00'.format(date=end_date)
 
-    event = Event(None, summary, location, None, None, list_of_attendees, start, end)
+    event = Event(None, summary, location, None,
+                  None, list_of_attendees, start, end)
 
-    event_output = api.events().insert(calendarId='primary', body=event.get_JSON_format()).execute()
+    event_output = api.events().insert(calendarId='primary',
+                                       body=event.get_JSON_format()).execute()
 
     if event_output['id'] != None:
         event.add_id(event_output['id'])
@@ -290,9 +283,6 @@ def start_new_event(api, summary, location, list_of_attendees, start_date, end_d
         event.add_organiser(event_output['organizer'])
 
     return event
-
-
-
 
 
 def delete_existing_event(api, event_id, event_date, current_date):
@@ -325,43 +315,103 @@ def addAttendee(api, eventId, newAttendeeEmail):
         if (len(updatedEvent['attendees']) == initialAttendeeAmount):
             print(f'{newAttendeeEmail} is already an attendee in this event')
         else:
-            print(f'{newAttendeeEmail} was added to event {eventId} on {updatedEvent["updated"]}.')
+            print(
+                f'{newAttendeeEmail} was added to event {eventId} on {updatedEvent["updated"]}.')
 
         return updatedEvent['attendees']
     except Exception as e:
         print(e)
-        print(f'{newAttendeeEmail} was not added successfully to event {eventId} as attendee.')
+        print(
+            f'{newAttendeeEmail} was not added successfully to event {eventId} as attendee.')
         return False
 
-def removeAttendee(api, eventId,attendeeEmail):
-    try:
-        event = api.events().get(calendarId='primary',eventId=eventId).execute()
 
-        eventLaterThan2050= isEventLaterThan2050(event)
-        if eventLaterThan2050: 
+def removeAttendee(api, eventId, attendeeEmail):
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+
+        eventLaterThan2050 = isEventLaterThan2050(event)
+        if eventLaterThan2050:
             raise Exception("Can't edit event that is later than 2050")
 
         attendees = event['attendees']
         initialAttendeeAmount = len(attendees)
-        attendees = list(filter(lambda attendee: attendee['email'] != attendeeEmail, attendees)) # get attendees that are not attendeeEmail
-        updatedEvent = api.events().patch(calendarId='primary',eventId=eventId,body={"attendees":attendees},sendUpdates="all").execute() # update event with new attendee list
+        # get attendees that are not attendeeEmail
+        attendees = list(
+            filter(lambda attendee: attendee['email'] != attendeeEmail, attendees))
+        updatedEvent = api.events().patch(calendarId='primary', eventId=eventId, body={
+            "attendees": attendees}, sendUpdates="all").execute()  # update event with new attendee list
 
         if len(attendees) == (initialAttendeeAmount-1):
-            print(f'{attendeeEmail} was removed from event {eventId} on {updatedEvent["updated"]}.')
+            print(
+                f'{attendeeEmail} was removed from event {eventId} on {updatedEvent["updated"]}.')
         else:
             print(f'{attendeeEmail} is not an attendee in this event.')
         return updatedEvent['attendees']
     except Exception as e:
         print(e)
-        print(f'{attendeeEmail} was not removed successfully from event {eventId} as attendee')
+        print(
+            f'{attendeeEmail} was not removed successfully from event {eventId} as attendee')
         return False
-    
+
+
 def isEventLaterThan2050(event):
     # Directly obtain first 4 characters of date to get year
-    startYear, endYear = int(event['start']['dateTime'][:4]), int(event['end']['dateTime'][:4])
+    startYear, endYear = int(event['start']['dateTime'][:4]), int(
+        event['end']['dateTime'][:4])
     if startYear > 2050 or endYear > 2050:
         return True
     return False
+
+
+def importEventFromJSON(api, eventJSON):
+    '''
+    Loads a JSON file in valid format and adds as event
+    '''
+    try:
+        f = open(eventJSON)
+        event = json.load(f)
+        event = api.events().insert(calendarId='primary', body=event).execute()
+        print(f'Event created: %s' % (event.get("htmlLink")))
+        return True
+
+    except FileNotFoundError as e:
+        print(e)
+        return "File not found"
+
+    except json.JSONDecodeError as e:
+        print(e)
+        return "Incorrect JSON file format"
+
+    except Exception as e:
+        print(e)
+        return "Event was not created successfully"
+    
+def exportEventToJson(api,eventId,exportDestination=None):
+    '''
+    Exports an event into JSON file. 
+    '''    
+    try:
+        event = api.events().get(calendarId='primary', eventId=eventId).execute()
+        fileName = '_'.join(event['summary'].split()) + ".json"
+
+        if not exportDestination:
+            path = fileName
+        else:
+            exportDestination = exportDestination.split("/")
+            exportDestination.append(fileName)
+            path = os.path.join(*exportDestination)
+
+        with open(path,"w") as outfile:
+            json.dump(event,outfile,indent=4)
+        print(f"Event JSON file created at {path}")
+        return path
+    
+    except FileNotFoundError:
+        print("Directory not found")
+        return False
+        
+
 
 def main():
     api = get_calendar_api()
@@ -382,4 +432,3 @@ def main():
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
     main()
-    
