@@ -257,6 +257,8 @@ class Application():
         if input_val == '1':
             # This is query for whole name (not case sensitive)
             query_val = input("Input event name for query (input E to exit): \n")
+            if query_val == '' or query_val == None:
+                raise ValueError('Query parameters must not be empty')
             if query_val == 'e' or query_val == 'E':
                 return 
             for event in self.event_list:
@@ -266,6 +268,8 @@ class Application():
         elif input_val == '2':
             # This is a query for a keyword in the name of an event (not case sensitive)
             query_val = input("Input event name for query (input E to exit): \n")
+            if query_val == '' or query_val == None:
+                raise ValueError('Query parameters must not be empty')
             if query_val == 'e' or query_val == 'E':
                 return 
             for event in self.event_list:
