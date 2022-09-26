@@ -1,5 +1,7 @@
 from MyEventManager import *
 from classes import *
+from datetime import *
+import datetime
 
 class Application():
     def __init__(self, api, date_time) -> None:
@@ -7,6 +9,7 @@ class Application():
         self.event_list = []
         self.archived_event_list = []
         self.date_time_now = date_time
+        self.query_events_list = []
 
     def on_start(self):
         self.event_list = self.get_event_list(self.api)
@@ -30,6 +33,8 @@ class Application():
                 pass #placeholder for updating an event 
             elif input_val == '6':
                 self.restore_event(self.api)  
+            elif input_val == '7':
+                self.query_events_list = self.query_events()
             elif (input_val == 'e') or (input_val == 'E'):
                 print('Thank you for using our application!')
                 break
@@ -43,9 +48,10 @@ class Application():
         print("4) Cancel Event")
         print("5) Edit Event")
         print("6) Restore Event")
+        print("7) Query Events")
         print("e) Exit Application")
         input_val = -1
-        valid_input = ['1','2','3','4','5','6','e','E']
+        valid_input = ['1','2','3','4','5','6', '7','e','E']
         while input_val not in valid_input:
             input_val = input("Input your desired action based on the index (input E to exit): \n")
         return input_val
@@ -195,12 +201,13 @@ class Application():
         delete_existing_event(api, event_to_cancel_id, event_to_cancel_time, time_now)
 
     def restore_event(self, api):
+        print('[]=======================Restore Event=========================[]')
         if len(self.archived_event_list) == 0:
             print('There are no events in backup/archive')
             return
 
         for i in range(len(self.archived_event_list)):
-            print('[{index}] {event_time} | {event_name}'.format(index=i+1, event_time=self.archived_event_list[i].start, event_name=self.archived_event_list[i].summary))
+            print('[{index}] {event_time} | {event_name}'.format(index=i+1, event_time=self.archived_event_list[i].start['dateTime'], event_name=self.archived_event_list[i].summary))
 
         input_val = -1
         valid_input = list(range(1,(len(self.archived_event_list)+1)))
@@ -213,11 +220,104 @@ class Application():
         event_to_restore = self.archived_event_list.pop(int(input_val) - 1) 
 
         # Create a new event 
-        restored_event = start_new_event(api, event_to_restore.summary, event_to_restore.location, event_to_restore.attendees, event_to_restore.start[:10], event_to_restore.end[:10])
+        restored_event = start_new_event(api, event_to_restore.summary, event_to_restore.location, event_to_restore.attendees, event_to_restore.start['dateTime'][:10], event_to_restore.end['dateTime'][:10])
 
         # Restore (technically add) the event to the list 
         self.event_list.append(restored_event)
-            
+
+    def query_events(self):
+        print('[]========================Query Events========================[]')
+        print('What would you like to query?')
+        print("1) Event Name")
+        print("2) Event Name (keyword)")
+        print("3) Event Start Year (yyyy)")
+        print("4) Event Start Date (yyyy-mm-dd)")
+        print("5) Event End Year (yyyy)")
+        print("6) Event End Date (yyyy-mm-dd)")
+        print("e) Exit Application")
+        #=======================================
+        queried_events = []
+
+        # Gathering user inputs
+        input_val = -1
+        valid_input = ['1','2','3','4','5','6','e','E']
+        while input_val not in valid_input:
+            input_val = input("Input your desired action based on the index (input E to exit): \n")
+            if input_val == 'e' or input_val == 'E':
+                return 
+
+        if input_val == '1':
+            # This is query for whole name (not case sensitive)
+            query_val = input("Input event name for query (input E to exit): \n")
+            if query_val == 'e' or query_val == 'E':
+                return 
+            for event in self.event_list:
+                if event.summary.upper() == query_val.upper():
+                    queried_events.append(event)
+
+        elif input_val == '2':
+            # This is a query for a keyword in the name of an event (not case sensitive)
+            query_val = input("Input event name for query (input E to exit): \n")
+            if query_val == 'e' or query_val == 'E':
+                return 
+            for event in self.event_list:
+                if event.summary.upper().find( query_val.upper() ) != -1:
+                    queried_events.append(event)
+
+        elif input_val == '3':
+            query_val = -1
+            while (int(query_val) < 2010) or (int(query_val) > 2050):
+                # Year 2010 is the creation year of google calendar
+                query_val = input("Input a year from 2010 - 2050 to query (input E to exit): \n")
+                if query_val == 'e' or query_val == 'E':
+                    return 
+            for event in self.event_list:
+                if event.start['dateTime'][:4] == query_val:
+                    queried_events.append(event)
+
+        elif input_val == '4':
+            query_val = -1
+            query_val = input("Input a date in yyyy-mm-dd (input E to exit): \n")
+            if query_val == 'e' or query_val == 'E':
+                return 
+            try:
+                datetime.datetime.strptime(query_val, '%Y-%M-%d')
+            except ValueError:
+                raise ValueError('Date was entered in wrong format')
+            for event in self.event_list:
+                if event.start['dateTime'][:10] == query_val:
+                    queried_events.append(event) 
+
+        elif input_val == '5':
+            query_val = -1
+            while (int(query_val) < 2010) or (int(query_val) > 2050):
+                # Year 2010 is the creation year of google calendar
+                query_val = input("Input a year from 2010 - 2050 to query (input E to exit): \n")
+                if query_val == 'e' or query_val == 'E':
+                    return 
+            for event in self.event_list:
+                if event.end['dateTime'][:4] == query_val:
+                    queried_events.append(event)
+
+        elif input_val == '6':
+            query_val = -1
+            query_val = input("Input a date in yyyy-mm-dd (input E to exit): \n")
+            if query_val == 'e' or query_val == 'E':
+                return 
+            try:
+                datetime.datetime.strptime(query_val, '%Y-%M-%d')
+            except ValueError:
+                raise ValueError('Date was entered in wrong format')
+            for event in self.event_list:
+                if event.end['dateTime'][:10] == query_val:
+                    queried_events.append(event) 
+
+        if len(queried_events) == 0:
+            print('Sadly, there are no events that matched your query')
+        else:
+            for i in range(len(queried_events)):
+                print('[{index}] {event_time} | {event_name}'.format(index=i+1, event_time=queried_events[i].start['dateTime'], event_name=queried_events[i].summary))
+        return queried_events
 
     def cancel_event(self, api):
         pass
