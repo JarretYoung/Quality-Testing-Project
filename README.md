@@ -1,4 +1,4 @@
-## Software Quality Testing on a an Event Manager
+## Software Quality Testing on an Event Manager
 
 This project is a display of software quality testing measures and practices. The project was built using a Test-Driven Development approach to facilitate the writing of clear and simple code of acceptable quality. This approach also ensures that code written is covered by testcases and this helps reduce the time taken for debugging. 
 
